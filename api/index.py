@@ -4,11 +4,11 @@ import re
 from datetime import datetime, timedelta, timezone
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from postgrest.exceptions import APIError
 from pydantic import BaseModel
 
-from ._lib import auth, codes, config, ratelimit, validate
+from ._lib import auth, chat, codes, config, ratelimit, validate
 from ._lib.db import client
 
 app = FastAPI(title="web-url-shortener api", docs_url=None, redoc_url=None)
@@ -18,6 +18,15 @@ CODE_RE = re.compile(r"^[a-zA-Z0-9]{4,10}$")
 
 class ShortenBody(BaseModel):
     url: str
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatBody(BaseModel):
+    messages: list[ChatMessage]
 
 
 def _client_ip(request: Request) -> str:
@@ -111,6 +120,35 @@ def delete_link(link_id: str, authorization: str | None = Header(default=None)):
         "user_id", user["id"]
     ).execute()
     return {"ok": True}
+
+
+@app.post("/api/py/chat")
+def support_chat(
+    body: ChatBody,
+    request: Request,
+    authorization: str | None = Header(default=None),
+):
+    if not body.messages:
+        raise HTTPException(status_code=422, detail="say something first")
+    for msg in body.messages:
+        if msg.role not in ("user", "assistant"):
+            raise HTTPException(status_code=422, detail="bad message role")
+        if len(msg.content) > 2000:
+            raise HTTPException(status_code=422, detail="message too long")
+
+    user = auth.user_from_token(authorization)
+    if user:
+        rl_key, rl_max = user["id"], config.USER_CHAT_PER_HOUR
+    else:
+        rl_key, rl_max = _client_ip(request), config.ANON_CHAT_PER_HOUR
+
+    if not ratelimit.allow(rl_key, "chat", rl_max):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
+
+    messages = [m.model_dump() for m in body.messages]
+    return StreamingResponse(
+        chat.stream_reply(messages, user), media_type="text/plain; charset=utf-8"
+    )
 
 
 def _count_click(code: str) -> None:
