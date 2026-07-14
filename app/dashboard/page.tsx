@@ -20,26 +20,30 @@ export default function DashboardPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    const token = await accessToken();
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
-    const res = await fetch("/api/py/links", {
-      headers: { authorization: `Bearer ${token}` },
-    });
-    if (res.status === 401) {
-      router.replace("/login");
-      return;
-    }
-    if (!res.ok) {
-      setError("could not load your links. refresh to retry.");
-      return;
-    }
-    const data = await res.json();
-    setLinks(data.links);
-    setSiteUrl(data.site_url);
+  const load = useCallback(() => {
+    // state updates happen inside promise callbacks, never synchronously in an effect
+    accessToken()
+      .then(async (token) => {
+        if (!token) {
+          router.replace("/login");
+          return;
+        }
+        const res = await fetch("/api/py/links", {
+          headers: { authorization: `Bearer ${token}` },
+        });
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
+        if (!res.ok) {
+          setError("could not load your links. refresh to retry.");
+          return;
+        }
+        const data = await res.json();
+        setLinks(data.links);
+        setSiteUrl(data.site_url);
+      })
+      .catch(() => setError("could not load your links. refresh to retry."));
   }, [router]);
 
   useEffect(() => {

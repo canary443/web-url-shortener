@@ -7,22 +7,22 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const STORAGE_KEY = "support-chat";
 
+function savedMessages(): Msg[] {
+  // history survives navigation within the tab, corrupted storage falls back to empty
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<Msg[]>(savedMessages);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
-
-  // history survives navigation within the tab
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem(STORAGE_KEY);
-      if (saved) setMessages(JSON.parse(saved));
-    } catch {
-      // corrupted storage is not worth crashing over
-    }
-  }, []);
 
   useEffect(() => {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
