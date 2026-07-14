@@ -19,6 +19,10 @@ export default function DashboardPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwMessage, setPwMessage] = useState<string | null>(null);
+  const [pwError, setPwError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     // state updates happen inside promise callbacks, never synchronously in an effect
@@ -80,6 +84,24 @@ export default function DashboardPage() {
     router.push("/");
   }
 
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (pwBusy) return;
+    setPwBusy(true);
+    setPwError(null);
+    setPwMessage(null);
+    const { error } = await supabase().auth.updateUser({
+      password: newPassword,
+    });
+    if (error) {
+      setPwError(error.message.toLowerCase());
+    } else {
+      setPwMessage("password updated.");
+      setNewPassword("");
+    }
+    setPwBusy(false);
+  }
+
   return (
     <div className="mx-auto w-full max-w-4xl px-5 pt-16 pb-24">
       <div className="flex items-end justify-between gap-4">
@@ -118,6 +140,46 @@ export default function DashboardPage() {
           </p>
         </div>
       )}
+
+      <details className="mt-8 rounded-md border border-line bg-surface">
+        <summary className="cursor-pointer px-4 py-3 text-sm text-muted transition-colors hover:text-foreground">
+          account security
+        </summary>
+        <form
+          onSubmit={changePassword}
+          className="flex flex-col gap-3 border-t border-line p-4 sm:flex-row"
+        >
+          <label htmlFor="account-password" className="sr-only">
+            new password
+          </label>
+          <input
+            id="account-password"
+            type="password"
+            required
+            minLength={6}
+            autoComplete="new-password"
+            placeholder="new password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="h-10 flex-1 rounded-md border border-line bg-background px-3 text-sm text-foreground placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent"
+          />
+          <button
+            type="submit"
+            disabled={pwBusy}
+            className="h-10 cursor-pointer rounded-md bg-foreground px-4 text-sm font-medium text-background transition-opacity hover:opacity-85 disabled:cursor-default disabled:opacity-50"
+          >
+            {pwBusy ? "working…" : "change password"}
+          </button>
+        </form>
+        {(pwError || pwMessage) && (
+          <p
+            role={pwError ? "alert" : undefined}
+            className={`px-4 pb-3 text-sm ${pwError ? "text-danger" : "text-accent"}`}
+          >
+            {pwError ?? pwMessage}
+          </p>
+        )}
+      </details>
 
       {links !== null && links.length > 0 && (
         <ul className="mt-10 divide-y divide-line border-y border-line">

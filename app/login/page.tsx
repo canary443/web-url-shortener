@@ -51,6 +51,23 @@ export default function LoginPage() {
     });
   }
 
+  async function forgotPassword() {
+    setError(null);
+    setNotice(null);
+    if (!email) {
+      setError("enter your email above first, then press forgot password.");
+      return;
+    }
+    const { error } = await supabase().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      setError(error.message.toLowerCase());
+    } else {
+      setNotice("reset link sent. check your inbox.");
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-sm px-5 pt-20 pb-24">
       <h1 className="text-2xl font-semibold tracking-tight">
@@ -126,6 +143,18 @@ export default function LoginPage() {
         </p>
       )}
       {notice && <p className="mt-4 text-sm text-accent">{notice}</p>}
+
+      {mode === "signin" && (
+        <p className="mt-4 text-sm text-muted">
+          <button
+            type="button"
+            onClick={forgotPassword}
+            className="cursor-pointer underline-offset-4 hover:text-foreground hover:underline"
+          >
+            forgot password?
+          </button>
+        </p>
+      )}
 
       <p className="mt-8 text-sm text-muted">
         {mode === "signin" ? "no account yet?" : "already have an account?"}{" "}
