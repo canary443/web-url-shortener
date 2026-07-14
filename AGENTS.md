@@ -16,11 +16,13 @@ transfer. everything you need is written down, nothing lives only in chat histor
 
 **reading order, do not skip:**
 1. this file - what the project is and how it is built
-2. `RULES.md` (local, gitignored) - all owner rules, setup checklist, commit style, definition of done
+2. `RULES.md` (local, gitignored) - all owner rules, session protocol, commit style, definition of done
 3. `SECURITY.md` (local, gitignored) - live keys, budgets, threat model, security rules
-4. `MEMORY.md` (local, gitignored) - hard-won gotchas, do not re-learn them
-5. `Handoff.md` - what is done, what is verified, current blockers, ordered next steps
-6. `Plans/` (local, gitignored) - the current implementation plan, newest file wins
+4. `STRUCTURE.md` (local, gitignored) - file-by-file map and recipes for common changes
+5. `MEMORY.md` (local, gitignored) - hard-won gotchas, do not re-learn them
+6. `Handoff.md` - what is done, what is verified, current blockers, ordered next steps
+7. `Plans/` (local, gitignored) - current plan + `Plans/Resolutions/` phase outcome logs
+8. `CODE_REVIEW.md` (local, gitignored) - open review findings, check before touching flagged areas
 
 **never do:** commit .env or any secret, use long dashes anywhere, write comments
 starting with a capital letter, change the repo-local git identity, push without
@@ -67,7 +69,7 @@ one vercel project serves both frontend and backend:
 - `tests/` - pytest for pure backend logic
 - `scripts/qa.sh` - the qa gate, run before claiming work done
 - `tools/willow-mcp/` - (planned) python stdio mcp server for image generation
-- `Handoff.md`, `RULES.md`, `MEMORY.md`, `SECURITY.md`, `Plans/` - agent files, see start here
+- `Handoff.md`, `RULES.md`, `MEMORY.md`, `SECURITY.md`, `STRUCTURE.md`, `CODE_REVIEW.md`, `Plans/` - agent files, see start here
 - `app/reset-password/page.tsx` - sets a new password from the email recovery link. password change also lives on the dashboard (account security block)
 
 ## backend endpoints

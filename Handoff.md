@@ -4,6 +4,28 @@ running log of project state for anyone (human or agent) picking up the work.
 newest entry on top. update after every 5-10 changes. architecture and rules
 live in AGENTS.md, this file is only "what happened and what is next".
 
+## 2026-07-14 18:50 - session end (claude fable 5 -> next agent)
+
+owner is switching agents. state: core product code-complete, live-tested locally
+(except chat streaming and sign-in flows), NOT deployed. qa gate green at last run.
+
+new for the successor since the last entry:
+- agent workspace extended: STRUCTURE.md (file map + recipes), CODE_REVIEW.md (6 findings logged, 1 high), Plans/Resolutions/ (per-phase outcomes, see RES_CLAUDE_14-07_17-27.md), image prompt rules and session-end protocol in RULES.md
+- willow-mcp written (tools/willow-mcp/server.py, mcp stdio + cli mode, registered in .mcp.json) but UNVERIFIED: deps not installed yet, model id "gpt-image-1" unconfirmed
+
+exact next steps, in order:
+1. `.venv/bin/pip install -r tools/willow-mcp/requirements.txt`
+2. probe image gen cheaply: `.venv/bin/python tools/willow-mcp/server.py --prompt "test render, dark slate abstract minimal" --quality 2k --out /tmp/probe.png` (pace calls, upstream 429s hard, see MEMORY.md willow section)
+3. banners per RULES.md image rules (hero 4k + 1-2 section 2k, budget $0.3 on the image key), webp to public/banners/, wire into home hero
+4. playwright screenshots: all pages, dark/light, 1440/375, fix visual issues
+5. deploy to vercel: import github repo, env vars per SECURITY.md prod list, function region fra1, then VERIFY the /:code rewrite passes the original path to the python function (CODE_REVIEW.md finding 1, high)
+6. after deploy: set NEXT_PUBLIC_SITE_URL to the live url, github repo description + live link, readme rewrite via humanizer, github actions ci
+7. chat streaming: owner is asking willow support about the real rate limits, until then the fallback chain covers it
+
+owner actions still pending:
+- github app callback url https://doaujyzqarexjdeblmjs.supabase.co/auth/v1/callback + enable github provider in supabase dashboard (client id Iv23lico8YsQaHSO6Me8 + secret)
+- willow support answer about 429s
+
 ## 2026-07-14 18:35
 
 - keys received and stored (.env + SECURITY.md, both gitignored): willow chat key (prod), willow image key (dev only), supabase service role. SECURITY.md is now the key inventory + threat model, added to the agent reading order

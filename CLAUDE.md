@@ -24,4 +24,5 @@ everything above (AGENTS.md) is the shared source of truth for any agent. this s
 - after every 5-10 file changes: update Handoff.md, commit it
 - before claiming anything works: run scripts/qa.sh (pytest + eslint + dash check + backend boot + build), and exercise the real flow when keys allow
 - new gotcha learned the hard way -> write it into MEMORY.md immediately
-- never commit .env, Plans/, RULES.md, MEMORY.md, .venv, screenshots
+- never commit .env, Plans/, RULES.md, MEMORY.md, SECURITY.md, STRUCTURE.md, CODE_REVIEW.md, .venv, screenshots
+- session end protocol lives in RULES.md, follow it when the owner wraps up
