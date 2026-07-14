@@ -19,3 +19,7 @@ pip3 install -r requirements.txt
 cp .env.example .env
 npm run dev
 ```
+
+## license
+
+agpl-3.0. use it, fork it, learn from it, but keep it open source. closed or proprietary use is not allowed.
