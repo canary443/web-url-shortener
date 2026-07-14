@@ -4,6 +4,17 @@ running log of project state for anyone (human or agent) picking up the work.
 newest entry on top. update after every 5-10 changes. architecture and rules
 live in AGENTS.md, this file is only "what happened and what is next".
 
+## 2026-07-14 18:35
+
+- keys received and stored (.env + SECURITY.md, both gitignored): willow chat key (prod), willow image key (dev only), supabase service role. SECURITY.md is now the key inventory + threat model, added to the agent reading order
+- live e2e passed with real db: shorten -> 302 redirect with correct target, missing code -> /?notfound=1, javascript: url -> 422, anon rate limit -> 429 exactly after 10
+- gpt-5.6-luna verified via direct api call. willowapi 429s aggressively (way below advertised 300 rpm), owner is contacting their support. chat.py now falls back stream -> plain -> busy message, so the widget degrades gracefully
+- security: headers in next.config.ts (nosniff, frame deny, referrer, permissions), injection-hardened chat system prompt, list/delete endpoints rate limited 240/h, supabase advisors clean (one intentional INFO: rate_limits has no policies, service role only)
+- accounts: password change on dashboard (account security block), forgot password on login, /reset-password page for email recovery links
+- license: agpl-3.0 (LICENSE + package.json + readme section) per owner choice, copyleft to block proprietary reuse
+- github: owner created a github app (id 4297736, client id Iv23lico8YsQaHSO6Me8). REMAINING owner actions: set callback url https://doaujyzqarexjdeblmjs.supabase.co/auth/v1/callback in the github app settings, then enable github provider in supabase dashboard with client id + secret
+- qa gate green after all changes
+
 ## 2026-07-14 18:10
 
 - agent workspace upgraded: RULES.md (all owner rules + session protocol + definition of done) and MEMORY.md (gotchas) created, both local/gitignored. AGENTS.md rewritten with a "start here" onboarding block, reading order and never-do list
