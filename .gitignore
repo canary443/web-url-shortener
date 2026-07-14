@@ -46,5 +46,7 @@ __pycache__/
 *.pyc
 .venv/
 
-# agent plans
+# agent files, local only
 Plans/
+RULES.md
+MEMORY.md

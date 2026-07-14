@@ -4,6 +4,15 @@ running log of project state for anyone (human or agent) picking up the work.
 newest entry on top. update after every 5-10 changes. architecture and rules
 live in AGENTS.md, this file is only "what happened and what is next".
 
+## 2026-07-14 18:10
+
+- agent workspace upgraded: RULES.md (all owner rules + session protocol + definition of done) and MEMORY.md (gotchas) created, both local/gitignored. AGENTS.md rewritten with a "start here" onboarding block, reading order and never-do list
+- qa gate added: scripts/qa.sh (pytest, eslint, long dash check, backend boot + health, build). it is the definition of done, currently green
+- fixed 3 react-hooks/set-state-in-effect lint errors the gate caught (theme-toggle now css-driven dual icons, chat widget lazy state init from sessionStorage, dashboard load moved setstate into promise callbacks)
+- new commit cadence in RULES.md: default lowercase one-liners, every 2nd-4th commit a normal Capitalized one with the model co-author trailer
+- turbopack root pinned in next.config.ts (stray lockfile in home dir confused workspace detection)
+- still blocked on: SUPABASE_SERVICE_ROLE_KEY, WILLOW_API_KEY (owner offered the willow key in chat), github oauth app. next: e2e qa + willow-mcp + banners + deploy per the 17:55 entry
+
 ## 2026-07-14 17:55
 
 state: core product is code-complete and pushed. nothing deployed yet.
