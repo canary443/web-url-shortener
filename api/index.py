@@ -99,6 +99,8 @@ def list_links(authorization: str | None = Header(default=None)):
     user = auth.user_from_token(authorization)
     if not user:
         raise HTTPException(status_code=401, detail="sign in required")
+    if not ratelimit.allow(user["id"], "api", config.USER_API_PER_HOUR):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
     result = (
         client()
         .table("links")
@@ -116,6 +118,8 @@ def delete_link(link_id: str, authorization: str | None = Header(default=None)):
     user = auth.user_from_token(authorization)
     if not user:
         raise HTTPException(status_code=401, detail="sign in required")
+    if not ratelimit.allow(user["id"], "api", config.USER_API_PER_HOUR):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
     client().table("links").delete().eq("id", link_id).eq(
         "user_id", user["id"]
     ).execute()

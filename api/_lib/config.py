@@ -34,3 +34,6 @@ USER_SHORTEN_PER_HOUR = 60
 # chat limits per hour
 ANON_CHAT_PER_HOUR = 10
 USER_CHAT_PER_HOUR = 50
+
+# authenticated api calls (list, delete) per hour
+USER_API_PER_HOUR = 240
