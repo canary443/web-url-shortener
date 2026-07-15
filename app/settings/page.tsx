@@ -32,9 +32,7 @@ function LockIcon() {
 export default function SettingsPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
-  const [siteUrl] = useState(() =>
-    typeof window === "undefined" ? "" : window.location.origin
-  );
+  const [siteUrl, setSiteUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [pwBusy, setPwBusy] = useState(false);
@@ -52,6 +50,7 @@ export default function SettingsPage() {
           router.replace("/login");
           return;
         }
+        setSiteUrl(window.location.origin);
         const res = await fetch("/api/py/api-key", {
           headers: { authorization: `Bearer ${token}` },
         });
