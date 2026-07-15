@@ -1,6 +1,7 @@
 # fastapi entrypoint, deployed as a vercel serverless function
 # routes are thin, logic lives in api/_lib
 import re
+from collections import Counter
 from datetime import datetime, timezone
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
@@ -8,7 +9,18 @@ from fastapi.responses import RedirectResponse
 from postgrest.exceptions import APIError
 from pydantic import BaseModel
 
-from ._lib import abuse, api_keys, auth, codes, config, link_policy, ratelimit, validate
+from ._lib import (
+    abuse,
+    admin,
+    api_keys,
+    auth,
+    codes,
+    config,
+    link_policy,
+    mailer,
+    ratelimit,
+    validate,
+)
 from ._lib.db import client
 
 app = FastAPI(title="web-url-shortener api", docs_url=None, redoc_url=None)
@@ -23,6 +35,12 @@ class ShortenBody(BaseModel):
 
 class SignupEventBody(BaseModel):
     email: str
+
+
+class SuspendBody(BaseModel):
+    days: int | None = None
+    reason: str = ""
+    delete_links: bool = False
 
 
 def _client_ip(request: Request) -> str:
@@ -224,6 +242,178 @@ def api_logs(authorization: str | None = Header(default=None)):
         # table not migrated yet, the dashboard shows an empty log
         events = []
     return {"events": events}
+
+
+ADMIN_Q_RE = re.compile(r"^[a-zA-Z0-9._:/\-]{0,64}$")
+
+
+def _require_admin(authorization: str | None) -> dict:
+    user = auth.user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="sign in required")
+    if not admin.is_admin(user):
+        raise HTTPException(status_code=403, detail="admin only")
+    return user
+
+
+def _notify_suspension(user_id: str, reason: str, days: int | None) -> None:
+    # background best effort, a dead smtp must never break the admin action
+    try:
+        target = admin.get_user(user_id)
+        email = target.get("email")
+        if not email:
+            return
+        length = "permanently" if days is None else f"for {days} days"
+        text = (
+            f"your lynka account was suspended {length}.\n\n"
+            + (f"reason: {reason}\n\n" if reason else "")
+            + "if you believe this is a mistake, reply to this email or write to "
+            "telegram @aimwork.\n"
+        )
+        mailer.send(email, "your lynka account was suspended", text)
+    except Exception:
+        pass
+
+
+def _notify_reinstatement(user_id: str) -> None:
+    try:
+        target = admin.get_user(user_id)
+        email = target.get("email")
+        if not email:
+            return
+        mailer.send(
+            email,
+            "your lynka account is active again",
+            "the suspension on your lynka account was lifted. your links and "
+            "api access work again.\n",
+        )
+    except Exception:
+        pass
+
+
+@app.get("/api/py/admin/users")
+def admin_users(page: int = 1, authorization: str | None = Header(default=None)):
+    user = _require_admin(authorization)
+    if not ratelimit.allow_read(user["id"], "admin", 600):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
+    try:
+        users = admin.list_users(page=max(1, page))
+    except Exception:
+        raise HTTPException(status_code=503, detail="auth admin api unavailable")
+    ids = [u["id"] for u in users]
+    counts: Counter[str] = Counter()
+    if ids:
+        try:
+            rows = (
+                client()
+                .table("links")
+                .select("user_id")
+                .in_("user_id", ids)
+                .limit(5000)
+                .execute()
+            )
+            counts = Counter(row["user_id"] for row in rows.data)
+        except Exception:
+            pass
+    return {
+        "users": [
+            {
+                "id": u["id"],
+                "email": u.get("email"),
+                "created_at": u.get("created_at"),
+                "last_sign_in_at": u.get("last_sign_in_at"),
+                "banned_until": u.get("banned_until"),
+                "links": counts.get(u["id"], 0),
+            }
+            for u in users
+        ]
+    }
+
+
+@app.get("/api/py/admin/links")
+def admin_links(q: str = "", authorization: str | None = Header(default=None)):
+    user = _require_admin(authorization)
+    if not ratelimit.allow_read(user["id"], "admin", 600):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
+    if not ADMIN_Q_RE.fullmatch(q):
+        raise HTTPException(status_code=422, detail="query has unsupported characters")
+    query = (
+        client()
+        .table("links")
+        .select("id, code, target_url, user_id, created_at, expires_at, clicks")
+        .order("created_at", desc=True)
+        .limit(50)
+    )
+    if q:
+        query = query.or_(f"code.eq.{q},target_url.ilike.*{q}*")
+    result = query.execute()
+    return {"links": result.data, "site_url": config.SITE_URL}
+
+
+@app.post("/api/py/admin/users/{user_id}/suspend")
+def admin_suspend(
+    user_id: str,
+    body: SuspendBody,
+    background: BackgroundTasks,
+    authorization: str | None = Header(default=None),
+):
+    user = _require_admin(authorization)
+    if not ratelimit.allow(user["id"], "admin_action", 120, 3600):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
+    if user_id == user["id"]:
+        raise HTTPException(status_code=422, detail="you cannot suspend yourself")
+    if body.days is not None and not 1 <= body.days <= 3650:
+        raise HTTPException(status_code=422, detail="days must be between 1 and 3650")
+    # gotrue takes a go duration string, ten years reads as permanent
+    duration = "87600h" if body.days is None else f"{body.days * 24}h"
+    try:
+        admin.set_ban(user_id, duration)
+    except Exception:
+        raise HTTPException(status_code=503, detail="auth admin api unavailable")
+    deleted_links = 0
+    if body.delete_links:
+        try:
+            result = (
+                client().table("links").delete().eq("user_id", user_id).execute()
+            )
+            deleted_links = len(result.data or [])
+        except Exception:
+            pass
+    background.add_task(_notify_suspension, user_id, body.reason, body.days)
+    background.add_task(_log_api_event, user["id"], "suspend", None)
+    return {"ok": True, "deleted_links": deleted_links, "email_queued": mailer.configured()}
+
+
+@app.post("/api/py/admin/users/{user_id}/unsuspend")
+def admin_unsuspend(
+    user_id: str,
+    background: BackgroundTasks,
+    authorization: str | None = Header(default=None),
+):
+    user = _require_admin(authorization)
+    if not ratelimit.allow(user["id"], "admin_action", 120, 3600):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
+    try:
+        admin.set_ban(user_id, "none")
+    except Exception:
+        raise HTTPException(status_code=503, detail="auth admin api unavailable")
+    background.add_task(_notify_reinstatement, user_id)
+    background.add_task(_log_api_event, user["id"], "unsuspend", None)
+    return {"ok": True, "email_queued": mailer.configured()}
+
+
+@app.delete("/api/py/admin/links/{link_id}")
+def admin_delete_link(
+    link_id: str,
+    background: BackgroundTasks,
+    authorization: str | None = Header(default=None),
+):
+    user = _require_admin(authorization)
+    if not ratelimit.allow(user["id"], "admin_action", 120, 3600):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
+    client().table("links").delete().eq("id", link_id).execute()
+    background.add_task(_log_api_event, user["id"], "admin_delete", None)
+    return {"ok": True}
 
 
 def _count_click(code: str) -> None:

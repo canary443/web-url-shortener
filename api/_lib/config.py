@@ -37,3 +37,17 @@ MAX_EXPIRES_IN_SECONDS = 3 * 3600
 
 # authenticated api calls (list, delete) per hour
 USER_API_PER_HOUR = 240
+
+# accounts allowed into the admin panel, comma separated emails
+ADMIN_EMAILS = {
+    email.strip().lower()
+    for email in os.environ.get("ADMIN_EMAILS", "").split(",")
+    if email.strip()
+}
+
+# optional smtp for admin notification emails, silently skipped when unset
+SMTP_HOST = os.environ.get("SMTP_HOST", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587") or 587)
+SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", "")
