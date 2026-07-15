@@ -4,6 +4,27 @@ running log of project state for anyone (human or agent) picking up the work.
 newest entry on top. update after every 5-10 changes. architecture and rules
 live in AGENTS.md, this file is only "what happened and what is next".
 
+## 2026-07-15 22:30 - session continues (claude fable 5): final art via proxy + ux fix wave
+
+### done and verified (fourth wave, commits 9d07d11..165e280)
+
+- owner provided a rotating 10k-ip proxy for image generation (creds in
+  SECURITY.md). willow-mcp now honors WILLOW_IMAGE_PROXY as an alternative to
+  mullvad, and both final icons generated FIRST TRY through it (the per-ip
+  429 wall is gone). total art spend this session stayed around $0.06-0.08
+- final icon set, all owner-approved concepts: stopwatch (no account), bar
+  pillars (signed in), classic shield with check (nothing watching), cyan
+  speedometer gauge from the owner's reference (the dashboard black card)
+- ux fixes, each verified in playwright: smooth anchor scroll to the shorten
+  form (reduced-motion safe), the logo hop wave now completes even when the
+  pointer leaves mid-hop (js .waving class instead of :hover), route lines
+  show only at xl and no longer touch the closing heading, card icons no
+  longer overlap text between lg and xl, the black card hover no longer
+  flickers (transform-gpu on the blur glow), the in-flow mobile hero was
+  removed per owner, and the url input no longer collapses on phones
+  (flex-basis was beating h-14 in the column layout, now sm:flex-1)
+- qa gate green, tree clean, all pushed
+
 ## 2026-07-15 21:30 - session continues (claude fable 5): real suspensions, /settings, oauth debugging
 
 ### done and verified (third wave, commits 449a6f8..f9c08b9)
