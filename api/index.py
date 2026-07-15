@@ -100,11 +100,22 @@ def shorten(
         raise HTTPException(status_code=422, detail="that url cannot be shortened")
 
     user = auth.user_from_token(authorization)
+    if auth.is_banned(user):
+        raise HTTPException(status_code=403, detail="account suspended")
     try:
         api_owner = api_keys.owner(x_api_key)
     except Exception:
         # key lookup needs the api_keys table, honest 503 beats a raw 500
         raise HTTPException(status_code=503, detail="api keys are not ready")
+    if api_owner:
+        # api keys belong to accounts, a suspended account loses them too
+        try:
+            if auth.is_banned(admin.get_user(api_owner["user_id"])):
+                raise HTTPException(status_code=403, detail="account suspended")
+        except HTTPException:
+            raise
+        except Exception:
+            pass
     user_id = api_owner["user_id"] if api_owner else user["id"] if user else None
 
     if x_api_key and not api_owner:
@@ -174,6 +185,8 @@ def create_api_key(authorization: str | None = Header(default=None)):
     user = auth.user_from_token(authorization)
     if not user:
         raise HTTPException(status_code=401, detail="sign in required")
+    if auth.is_banned(user):
+        raise HTTPException(status_code=403, detail="account suspended")
     if not ratelimit.allow(user["id"], "api_key_create", 5, 3600):
         raise HTTPException(status_code=429, detail="rate limit reached, try later")
     try:
@@ -188,6 +201,8 @@ def list_links(authorization: str | None = Header(default=None)):
     user = auth.user_from_token(authorization)
     if not user:
         raise HTTPException(status_code=401, detail="sign in required")
+    if auth.is_banned(user):
+        raise HTTPException(status_code=403, detail="account suspended")
     if not ratelimit.allow_read(user["id"], "api", config.USER_API_PER_HOUR):
         raise HTTPException(status_code=429, detail="rate limit reached, try later")
     result = (
@@ -211,6 +226,8 @@ def delete_link(
     user = auth.user_from_token(authorization)
     if not user:
         raise HTTPException(status_code=401, detail="sign in required")
+    if auth.is_banned(user):
+        raise HTTPException(status_code=403, detail="account suspended")
     if not ratelimit.allow(user["id"], "api", config.USER_API_PER_HOUR):
         raise HTTPException(status_code=429, detail="rate limit reached, try later")
     client().table("links").delete().eq("id", link_id).eq(

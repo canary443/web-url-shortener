@@ -1,8 +1,25 @@
 # resolves the current user from a supabase access token
 # validation goes through the auth server, so it works with any signing setup
+from datetime import datetime, timezone
+
 import httpx
 
 from . import config
+
+
+def is_banned(user: dict | None) -> bool:
+    # a pre-ban access token stays valid for up to an hour, but the user
+    # object carries banned_until, so endpoints can enforce the ban instantly
+    if not user:
+        return False
+    banned_until = user.get("banned_until")
+    if not banned_until:
+        return False
+    try:
+        until = datetime.fromisoformat(str(banned_until).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return until > datetime.now(timezone.utc)
 
 
 def user_from_token(authorization: str | None) -> dict | None:

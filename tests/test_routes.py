@@ -153,3 +153,35 @@ def test_api_key_settings_503_when_table_missing(make_client):
     resp = client.get("/api/py/api-key", headers=AUTH)
 
     assert resp.status_code == 503
+
+
+BANNED_USER = {"id": "user-1", "banned_until": "2999-01-01T00:00:00Z"}
+FORMERLY_BANNED = {"id": "user-1", "banned_until": "2001-01-01T00:00:00Z"}
+
+
+def test_banned_user_cannot_shorten(make_client):
+    client = make_client(FakeDb(), user=BANNED_USER)
+
+    resp = client.post(
+        "/api/py/shorten", json={"url": "https://example.com/x"}, headers=AUTH
+    )
+
+    assert resp.status_code == 403
+    assert "suspended" in resp.json()["detail"]
+
+
+def test_banned_user_gets_suspended_dashboard(make_client):
+    client = make_client(FakeDb(), user=BANNED_USER)
+
+    resp = client.get("/api/py/links", headers=AUTH)
+
+    assert resp.status_code == 403
+    assert "suspended" in resp.json()["detail"]
+
+
+def test_expired_ban_no_longer_blocks(make_client):
+    client = make_client(FakeDb(tables={"links": []}), user=FORMERLY_BANNED)
+
+    resp = client.get("/api/py/links", headers=AUTH)
+
+    assert resp.status_code == 200

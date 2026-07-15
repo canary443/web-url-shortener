@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Reveal } from "@/components/reveal";
 
 export const metadata: Metadata = {
   title: "lynka api docs",
@@ -24,7 +25,8 @@ function Code({ children }: { children: string }) {
 
 export default function DocsPage() {
   return (
-    <div className="rise-seq mx-auto w-full max-w-3xl px-5 pt-16 pb-24">
+    <div className="mx-auto w-full max-w-3xl px-5 pt-16 pb-24">
+      <div className="rise-seq">
       <h1 className="text-4xl font-bold sm:text-5xl">
         api <em>docs</em>
       </h1>
@@ -32,8 +34,9 @@ export default function DocsPage() {
         sign in, open api settings in the dashboard and create your key. each
         account has one key. regenerating it invalidates the previous key.
       </p>
+      </div>
 
-      <section className="mt-12">
+      <Reveal><section className="mt-12">
         <h2 className="text-xl font-bold">settings</h2>
         <ul className="mt-3 space-y-1.5 text-sm leading-relaxed text-muted">
           <li>5 requests per minute, counted across the whole account</li>
@@ -53,9 +56,9 @@ export default function DocsPage() {
           </a>
           .
         </p>
-      </section>
+      </section></Reveal>
 
-      <section className="mt-12">
+      <Reveal><section className="mt-12">
         <h2 className="text-xl font-bold">shorten a url</h2>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
           POST /api/py/shorten with a json body and your api key. custom expiry
@@ -67,23 +70,23 @@ export default function DocsPage() {
           429 means the account rate limit was reached. javascript:, data:,
           localhost and private networks are refused.
         </p>
-      </section>
+      </section></Reveal>
 
-      <section className="mt-12">
+      <Reveal><section className="mt-12">
         <h2 className="text-xl font-bold">dashboard management</h2>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           listing and deleting links are account dashboard actions and use your
           signed-in browser session. the api key currently creates links only.
         </p>
-      </section>
+      </section></Reveal>
 
-      <section className="mt-12">
+      <Reveal><section className="mt-12">
         <h2 className="text-xl font-bold">redirects</h2>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
           GET /{"{code}"} answers 302 to the target. expired or unknown codes
           redirect to the home page. api links count clicks.
         </p>
-      </section>
+      </section></Reveal>
 
       <p className="mt-14 text-sm text-muted">
         see the{" "}

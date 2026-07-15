@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Reveal } from "@/components/reveal";
 
 export const metadata: Metadata = {
   title: "lynka privacy policy",
@@ -73,34 +74,38 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <div className="rise-seq mx-auto w-full max-w-2xl px-5 pt-16 pb-24">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-        privacy <em>policy</em>
-      </h1>
-      <p className="mt-4 text-sm text-muted">last updated 2026-07-15</p>
-      <p className="mt-2 text-sm text-muted">
-        service use is also governed by the{" "}
-        <Link
-          href="/terms"
-          className="text-foreground underline underline-offset-4"
-        >
-          terms of service
-        </Link>
-        .
-      </p>
+    <div className="mx-auto w-full max-w-2xl px-5 pt-16 pb-24">
+      <div className="rise-seq">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          privacy <em>policy</em>
+        </h1>
+        <p className="mt-4 text-sm text-muted">last updated 2026-07-15</p>
+        <p className="mt-2 text-sm text-muted">
+          service use is also governed by the{" "}
+          <Link
+            href="/terms"
+            className="text-foreground underline underline-offset-4"
+          >
+            terms of service
+          </Link>
+          .
+        </p>
+      </div>
 
       {sections.map((section) => (
-        <section key={section.title} className="mt-10">
-          <h2 className="text-xl font-bold tracking-tight">{section.title}</h2>
-          {section.body.map((paragraph) => (
-            <p
-              key={paragraph.slice(0, 24)}
-              className="mt-3 text-sm leading-relaxed text-muted"
-            >
-              {paragraph}
-            </p>
-          ))}
-        </section>
+        <Reveal key={section.title}>
+          <section className="mt-10">
+            <h2 className="text-xl font-bold tracking-tight">{section.title}</h2>
+            {section.body.map((paragraph) => (
+              <p
+                key={paragraph.slice(0, 24)}
+                className="mt-3 text-sm leading-relaxed text-muted"
+              >
+                {paragraph}
+              </p>
+            ))}
+          </section>
+        </Reveal>
       ))}
     </div>
   );
