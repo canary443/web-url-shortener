@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from postgrest.exceptions import APIError
 
 from api import index
-from api._lib import api_keys, auth, ratelimit
+from api._lib import api_keys, auth, botcheck, captcha, ratelimit
 
 
 def db_error():
@@ -183,5 +183,60 @@ def test_expired_ban_no_longer_blocks(make_client):
     client = make_client(FakeDb(tables={"links": []}), user=FORMERLY_BANNED)
 
     resp = client.get("/api/py/links", headers=AUTH)
+
+    assert resp.status_code == 200
+
+
+@pytest.fixture
+def suspicious(monkeypatch):
+    # every request looks automated and the captcha feature is switched on
+    monkeypatch.setattr(botcheck, "suspicion", lambda ip: "datacenter ip")
+    monkeypatch.setattr(captcha, "configured", lambda: True)
+
+
+def test_suspicious_anon_shorten_gets_428(make_client, suspicious):
+    client = make_client(FakeDb(tables={"links": []}), user=None)
+
+    resp = client.post("/api/py/shorten", json={"url": "https://example.com/x"})
+
+    assert resp.status_code == 428
+    assert "captcha" in resp.json()["detail"]
+
+
+def test_suspicious_anon_shorten_passes_with_captcha(
+    make_client, suspicious, monkeypatch
+):
+    monkeypatch.setattr(captcha, "verify", lambda token, ip: token == "solved")
+    client = make_client(FakeDb(tables={"links": []}), user=None)
+
+    resp = client.post(
+        "/api/py/shorten",
+        json={"url": "https://example.com/x"},
+        headers={"x-captcha-token": "solved"},
+    )
+
+    assert resp.status_code == 200
+    assert "short_url" in resp.json()
+
+
+def test_bad_captcha_token_still_428(make_client, suspicious, monkeypatch):
+    monkeypatch.setattr(captcha, "verify", lambda token, ip: False)
+    client = make_client(FakeDb(tables={"links": []}), user=None)
+
+    resp = client.post(
+        "/api/py/shorten",
+        json={"url": "https://example.com/x"},
+        headers={"x-captcha-token": "forged"},
+    )
+
+    assert resp.status_code == 428
+
+
+def test_signed_in_user_skips_captcha(make_client, suspicious):
+    client = make_client(FakeDb(tables={"links": []}))
+
+    resp = client.post(
+        "/api/py/shorten", json={"url": "https://example.com/x"}, headers=AUTH
+    )
 
     assert resp.status_code == 200

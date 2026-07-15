@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { Turnstile, turnstileEnabled } from "@/components/turnstile";
 
 type Mode = "signin" | "signup";
 
@@ -16,6 +17,14 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaRound, setCaptchaRound] = useState(0);
+
+  function consumeCaptcha() {
+    // turnstile tokens are single use, remount the widget for the next try
+    setCaptchaToken(null);
+    setCaptchaRound((round) => round + 1);
+  }
 
   useEffect(() => {
     // oauth failures come back in the url and would otherwise vanish silently
@@ -39,15 +48,22 @@ export default function LoginPage() {
     setNotice(null);
 
     const sb = supabase();
+    const options = captchaToken ? { captchaToken } : undefined;
     if (mode === "signin") {
-      const { error } = await sb.auth.signInWithPassword({ email, password });
+      const { error } = await sb.auth.signInWithPassword({
+        email,
+        password,
+        options,
+      });
+      consumeCaptcha();
       if (error) {
         setError(error.message.toLowerCase());
       } else {
         router.push("/dashboard");
       }
     } else {
-      const { data, error } = await sb.auth.signUp({ email, password });
+      const { data, error } = await sb.auth.signUp({ email, password, options });
+      consumeCaptcha();
       if (error) {
         setError(error.message.toLowerCase());
       } else {
@@ -83,7 +99,9 @@ export default function LoginPage() {
     }
     const { error } = await supabase().auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
+      ...(captchaToken ? { captchaToken } : {}),
     });
+    consumeCaptcha();
     if (error) {
       setError(error.message.toLowerCase());
     } else {
@@ -175,9 +193,18 @@ export default function LoginPage() {
             </span>
           </label>
         )}
+        <Turnstile
+          key={captchaRound}
+          onToken={setCaptchaToken}
+          onExpire={() => setCaptchaToken(null)}
+        />
         <button
           type="submit"
-          disabled={busy || (mode === "signup" && !acceptedTerms)}
+          disabled={
+            busy ||
+            (mode === "signup" && !acceptedTerms) ||
+            (turnstileEnabled() && !captchaToken)
+          }
           className="mt-1 h-11 cursor-pointer rounded-md bg-foreground text-sm font-medium text-background transition-opacity hover:opacity-85 disabled:cursor-default disabled:opacity-50"
         >
           {busy

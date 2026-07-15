@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { accessToken } from "@/lib/supabase";
+import { Turnstile } from "@/components/turnstile";
 
 type ShortenResult = {
   code: string;
@@ -27,9 +28,10 @@ export function ShortenForm() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ShortenResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [captchaNeeded, setCaptchaNeeded] = useState(false);
+  const [captchaRound, setCaptchaRound] = useState(0);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function run(captchaToken?: string) {
     if (busy || !url.trim()) return;
     setBusy(true);
     setError(null);
@@ -43,6 +45,7 @@ export function ShortenForm() {
         headers: {
           "content-type": "application/json",
           ...(token ? { authorization: `Bearer ${token}` } : {}),
+          ...(captchaToken ? { "x-captcha-token": captchaToken } : {}),
         },
         body: JSON.stringify({ url }),
       });
@@ -50,6 +53,12 @@ export function ShortenForm() {
       if (res.ok) {
         setResult({ ...(await res.json()), owned: !!token });
         setUrl("");
+        setCaptchaNeeded(false);
+      } else if (res.status === 428) {
+        // the backend suspects automation, a solved turnstile unblocks it
+        setCaptchaNeeded(true);
+        setCaptchaRound((round) => round + 1);
+        setError("quick human check needed. it takes a second, the link follows right after.");
       } else if (res.status === 429) {
         setError("rate limit reached. wait a bit and try again.");
       } else if (res.status === 422) {
@@ -62,6 +71,11 @@ export function ShortenForm() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    await run();
   }
 
   async function copy() {
@@ -105,6 +119,12 @@ export function ShortenForm() {
         <p role="alert" className="mt-3 text-sm text-danger">
           {error}
         </p>
+      )}
+
+      {captchaNeeded && (
+        <div className="mt-4 rounded-xl bg-background/80 p-3 backdrop-blur">
+          <Turnstile key={captchaRound} onToken={(token) => void run(token)} />
+        </div>
       )}
 
       {result && (

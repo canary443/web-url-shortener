@@ -38,6 +38,13 @@ MAX_EXPIRES_IN_SECONDS = 3 * 3600
 # authenticated api calls (list, delete) per hour
 USER_API_PER_HOUR = 240
 
+# cloudflare turnstile secret, empty disables every captcha check
+TURNSTILE_SECRET = os.environ.get("TURNSTILE_SECRET", "")
+
+# anon shorten heuristics: past these thresholds a captcha is demanded
+ANON_BURST_PER_MINUTE = 10
+ANON_FAST_PER_15S = 5
+
 # accounts allowed into the admin panel, comma separated emails
 ADMIN_EMAILS = {
     email.strip().lower()

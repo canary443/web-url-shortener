@@ -14,6 +14,8 @@ from ._lib import (
     admin,
     api_keys,
     auth,
+    botcheck,
+    captcha,
     codes,
     config,
     link_policy,
@@ -94,6 +96,7 @@ def shorten(
     background: BackgroundTasks,
     authorization: str | None = Header(default=None),
     x_api_key: str | None = Header(default=None),
+    x_captcha_token: str | None = Header(default=None),
 ):
     url = validate.clean_url(body.url)
     if url is None:
@@ -122,6 +125,15 @@ def shorten(
         raise HTTPException(status_code=401, detail="invalid api key")
     if body.expires_in is not None:
         raise HTTPException(status_code=422, detail="custom expiry is locked")
+
+    if user is None and api_owner is None and captcha.configured():
+        # anonymous traffic that smells automated has to solve a captcha first.
+        # 428 tells the form to render the widget and retry with a token
+        client_ip = _client_ip(request)
+        if botcheck.suspicion(client_ip) and not captcha.verify(
+            x_captcha_token, client_ip
+        ):
+            raise HTTPException(status_code=428, detail="captcha required")
 
     if api_owner:
         allowed = ratelimit.allow(user_id, "api_shorten", api_owner["rpm"], 60)
