@@ -58,3 +58,5 @@ SMTP_PORT = int(os.environ.get("SMTP_PORT", "587") or 587)
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 SMTP_FROM = os.environ.get("SMTP_FROM", "")
+# the sender mailbox does not exist, replies must land somewhere real
+SMTP_REPLY_TO = os.environ.get("SMTP_REPLY_TO", "a@leet-cheats.xyz")

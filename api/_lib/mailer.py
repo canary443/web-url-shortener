@@ -16,6 +16,8 @@ def send(to: str, subject: str, text: str) -> bool:
     message["From"] = config.SMTP_FROM
     message["To"] = to
     message["Subject"] = subject
+    if config.SMTP_REPLY_TO:
+        message["Reply-To"] = config.SMTP_REPLY_TO
     message.set_content(text)
     try:
         with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT, timeout=15) as smtp:
