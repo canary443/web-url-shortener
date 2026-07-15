@@ -53,3 +53,12 @@ MEMORY.md
 SECURITY.md
 STRUCTURE.md
 CODE_REVIEW.md
+
+# working files: screenshots, image probes, tool state
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+tmp/
+.playwright-mcp/
+.codex/

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- keycap tile, same language as the lynka logo tiles -->
+  <rect x="2" y="5" width="60" height="58" rx="19" fill="#0a0b0d" opacity="0.1"/>
+  <rect x="2" y="2" width="60" height="59" rx="19" fill="#ffffff" stroke="#e2e3e5" stroke-width="2"/>
+  <rect x="28.5" y="15" width="7" height="33" rx="3.5" fill="#0a0b0d"/>
+</svg>
