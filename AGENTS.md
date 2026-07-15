@@ -37,9 +37,10 @@ running `scripts/qa.sh`, redesign the ui away from the design system below.
   click counts, 5 shortens per minute, dashboard with copy, delete, stats
 - `GET /{code}` redirects and counts the click (signed-in links only)
 - one api key per account, shown once and stored as a hash. regenerating
-  invalidates the old key. settings are locked at 5 rpm and 31-day links,
-  higher limits are sold by individual agreement (crypto accepted) through the
-  support contacts, terms and privacy describe this
+  invalidates the old key. settings are locked at 5 rpm and 31-day links.
+  higher limits are granted case by case, free, at the owner's discretion
+  through the support contacts (owner decision 2026-07-15: no paid plans, no
+  impressum obligation - the site stays non-commercial)
 - admin control room at `/admin` (access via ADMIN_EMAILS env): users with
   link counts, suspend/unsuspend with optional email notice, link search and
   force delete. a suspended account instantly loses shorten, dashboard and api

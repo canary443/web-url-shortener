@@ -31,7 +31,7 @@ const sections = [
       "rate limiting: short lived counters keyed by ip address for anonymous requests and by account id for signed in ones. legal basis: our legitimate interest in keeping the service available (art. 6(1)(f) gdpr).",
       "abuse prevention: when an account is registered, we store the signup ip address, time and a keyed fingerprint of the email (not the email itself) for 30 days. this identifies automated registrations and attempts to evade limits. legal basis: art. 6(1)(f) gdpr, the legitimate interest of protecting users and the service. you can object to this processing (see your rights).",
       "cookies: only strictly necessary session cookies that keep you signed in. no consent banner is required for these (sec. 25(2) ttdsg), and there is nothing else to consent to.",
-      "paid upgrades: if you agree on higher limits with us, we store the agreed settings (requests per minute, link lifetime) on your account. payments are arranged directly between you and us outside this website; we do not collect or store payment details here. if you pay in cryptocurrency, remember that blockchain transactions are public by design and are not controlled by us. legal basis: art. 6(1)(b) gdpr.",
+      "individual limits: if we adjust the limits of your account, the applied settings (requests per minute, link lifetime) are stored on your account. legal basis: art. 6(1)(b) gdpr.",
     ],
   },
   {
@@ -44,7 +44,8 @@ const sections = [
   {
     title: "who processes data for us",
     body: [
-      "supabase (database and authentication), hosted in frankfurt, germany. vercel (website hosting and delivery), which processes technical request data such as ip addresses in short lived server logs; depending on where you connect from, vercel may process such data outside the eu under the eu standard contractual clauses. we have data processing agreements with both providers.",
+      "supabase (database and authentication), hosted in frankfurt, germany. vercel (website hosting and delivery): the backend functions that create links and count clicks run in frankfurt, germany too, so link data is processed inside the eu. vercel additionally processes technical request data such as ip addresses in short lived server logs through its global delivery network; depending on where you connect from, that data may be processed outside the eu under the eu standard contractual clauses. we have data processing agreements with both providers.",
+      "cloudflare turnstile protects the sign in, sign up and shorten forms from bots. when a check runs, your browser talks to cloudflare and technical signals about the browser environment are processed; we only receive a pass or fail token, never your identity. cloudflare processes this under the eu-us data privacy framework and standard contractual clauses. legal basis: art. 6(1)(f) gdpr, keeping automated abuse out.",
       "we never sell data, never share it for advertising and never transfer it to anyone else unless the law requires it.",
     ],
   },
