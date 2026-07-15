@@ -21,9 +21,20 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
   title: "lynka - short links, no noise",
   description:
     "a small url shortener. anonymous links live an hour, signed in links 31 days with click counts. no trackers, open source.",
+  openGraph: {
+    title: "lynka - short links, no noise",
+    description:
+      "a small url shortener. anonymous links live an hour, signed in links 31 days with click counts. no trackers, open source.",
+    url: "/",
+    siteName: "lynka",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

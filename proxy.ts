@@ -6,6 +6,13 @@ import type { NextRequest } from "next/server";
 // deliberately outside the matcher, redirects and api clients never see it
 const COOKIE = "lynka_human";
 
+// search engines must be able to index the public pages, so known crawlers
+// skip the gate. user agents are spoofable, but this gate is a nuisance
+// filter for casual bots, not a security boundary (the real limits live in
+// the backend rate limiting and the shorten captcha)
+const CRAWLER_RE =
+  /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandex(bot|images)|applebot|petalbot|ia_archiver/i;
+
 function hex(buffer: ArrayBuffer): string {
   return Array.from(new Uint8Array(buffer))
     .map((byte) => byte.toString(16).padStart(2, "0"))
@@ -38,6 +45,9 @@ export async function proxy(request: NextRequest) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   // both keys present switch the gate on, otherwise the site works as before
   if (!secret || !siteKey) return NextResponse.next();
+
+  const agent = request.headers.get("user-agent") ?? "";
+  if (CRAWLER_RE.test(agent)) return NextResponse.next();
 
   const pass = request.cookies.get(COOKIE)?.value;
   if (await passIsValid(pass, secret)) return NextResponse.next();
