@@ -93,3 +93,17 @@ def test_captcha_network_error_fails_closed(secret, monkeypatch):
 
     monkeypatch.setattr(httpx, "post", boom)
     assert not captcha.verify("token", "1.2.3.4")
+
+
+def test_mint_pass_shape_and_signature(secret):
+    import hashlib
+    import hmac
+    import time
+
+    value = captcha.mint_pass()
+    expiry, sig = value.split(".")
+    assert int(expiry) > time.time()
+    expected = hmac.new(
+        b"test-secret", expiry.encode(), hashlib.sha256
+    ).hexdigest()
+    assert sig == expected

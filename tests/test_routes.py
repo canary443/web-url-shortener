@@ -240,3 +240,36 @@ def test_signed_in_user_skips_captcha(make_client, suspicious):
     )
 
     assert resp.status_code == 200
+
+
+def test_verify_human_503_when_captcha_off(make_client, monkeypatch):
+    monkeypatch.setattr(captcha, "configured", lambda: False)
+    client = make_client(FakeDb())
+
+    resp = client.post("/api/py/auth/verify-human", json={"token": "x"})
+
+    assert resp.status_code == 503
+
+
+def test_verify_human_rejects_bad_token(make_client, monkeypatch):
+    monkeypatch.setattr(captcha, "configured", lambda: True)
+    monkeypatch.setattr(captcha, "verify", lambda token, ip: False)
+    client = make_client(FakeDb())
+
+    resp = client.post("/api/py/auth/verify-human", json={"token": "forged"})
+
+    assert resp.status_code == 403
+
+
+def test_verify_human_sets_the_gate_cookie(make_client, monkeypatch):
+    monkeypatch.setattr(captcha, "configured", lambda: True)
+    monkeypatch.setattr(captcha, "verify", lambda token, ip: token == "solved")
+    monkeypatch.setattr(captcha, "mint_pass", lambda: "123.abc")
+    client = make_client(FakeDb())
+
+    resp = client.post("/api/py/auth/verify-human", json={"token": "solved"})
+
+    assert resp.status_code == 200
+    cookie = resp.headers.get("set-cookie", "")
+    assert "lynka_human=123.abc" in cookie
+    assert "HttpOnly" in cookie

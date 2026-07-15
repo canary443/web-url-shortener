@@ -5,7 +5,7 @@ from collections import Counter
 from datetime import datetime, timezone
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from postgrest.exceptions import APIError
 from pydantic import BaseModel
 
@@ -87,6 +87,33 @@ def signup_event(body: SignupEventBody, request: Request):
         # abuse telemetry must never break a completed signup
         pass
     return {"ok": True}
+
+
+class VerifyHumanBody(BaseModel):
+    token: str
+
+
+@app.post("/api/py/auth/verify-human")
+def verify_human(body: VerifyHumanBody, request: Request):
+    # the /verify interstitial trades a solved turnstile for the gate cookie
+    if not captcha.configured():
+        raise HTTPException(status_code=503, detail="captcha is not enabled")
+    ip_address = _client_ip(request)
+    if not ratelimit.allow(ip_address, "verify_human", 30, 3600):
+        raise HTTPException(status_code=429, detail="rate limit reached, try later")
+    if not captcha.verify(body.token, ip_address):
+        raise HTTPException(status_code=403, detail="captcha failed")
+    response = JSONResponse({"ok": True})
+    response.set_cookie(
+        "lynka_human",
+        captcha.mint_pass(),
+        max_age=captcha.PASS_TTL_SECONDS,
+        httponly=True,
+        secure=config.SITE_URL.startswith("https://"),
+        samesite="lax",
+        path="/",
+    )
+    return response
 
 
 @app.post("/api/py/shorten")
