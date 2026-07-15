@@ -4,6 +4,63 @@ running log of project state for anyone (human or agent) picking up the work.
 newest entry on top. update after every 5-10 changes. architecture and rules
 live in AGENTS.md, this file is only "what happened and what is next".
 
+## 2026-07-16 00:40 - session continues (fable 5): real captcha keys, otp signup, seo
+
+### done this wave
+
+- REAL turnstile widget exists (owner created it): sitekey/secret in
+  SECURITY.md, both set in vercel production env. local .env keeps the
+  official test pair on purpose (dev works without the widget domains)
+- owner set supabase: email otp length 8, min password 8 with
+  upper/lower/digit/symbol, sign in/sign up rate limit 50 per 5 min.
+  leaked password toggle FAILED (pro plan only), replaced in code:
+  lib/pwned.ts checks hibp range api (k-anonymity, sha1 prefix only,
+  fails open) before signUp and rejects breached passwords
+- signup now confirms with an 8 digit CODE, not a link: login page got a
+  third mode (confirm) with code input, verifyOtp type signup -> email
+  fallback, resend button (captcha-aware). NOT e2e-verified: needs a real
+  mailbox, and the owner still has to switch the supabase email template
+  to {{ .Token }} (see checklist)
+- seo: app/robots.ts (disallow dashboard/settings/admin/verify/api),
+  app/sitemap.ts (5 public pages), metadataBase + og tags in layout,
+  known search crawlers (google/bing/yandex/ddg/apple/baidu/petal) skip
+  the human gate by user agent. minLength 8 on the signup password field
+- stray app/favicon.jpeg + "icon Medium.jpeg" deleted (owner said delete)
+- qa green (81 pytest), pushed, prod redeploy carries the real keys - the
+  human gate goes LIVE on lynka.xyz with this deploy
+
+### smtp + email template (16-07 early, same session)
+
+- owner set up resend (free tier) and verified lynka.xyz there, gave a
+  sending-only api key (SECURITY.md). probe + template preview both
+  delivered to a@leet-cheats.xyz
+- SMTP_* now set in .env and vercel production env, so mailer.py admin
+  suspension emails work after the next deploy
+- polished otp email template lives in
+  supabase/templates/confirm-signup.html (bulletproof table layout,
+  keycap logo, tinted card, big mono code). owner pastes it into the
+  supabase confirm-signup template, subject suggestion:
+  "confirm your lynka account"
+
+### owner checklist still open
+
+1. supabase dashboard -> authentication -> attack protection: enable
+   captcha, provider turnstile, secret from SECURITY.md (until then login
+   captcha tokens are sent but not enforced). NOTE: the secret briefly hit
+   a public commit on 16-07 and was scrubbed by a history rewrite, owner
+   should rotate it in the cloudflare dash and update vercel + supabase
+2. supabase smtp form (owner already had it open): host smtp.resend.com,
+   port 465, user "resend", password = the resend key, sender
+   noreply@lynka.xyz / "lynka". then rate limits -> emails to 120/h
+3. supabase dashboard -> authentication -> emails -> "confirm signup":
+   paste supabase/templates/confirm-signup.html (it renders the code via
+   {{ .Token }}), subject "confirm your lynka account"
+4. google search console: add property lynka.xyz (dns txt through the
+   vercel domains dash), submit https://lynka.xyz/sitemap.xml. same in
+   bing webmaster tools (can import from gsc) and yandex webmaster
+5. first real signup end to end (code entry) once 2+3 are done - agents
+   cannot read the mailbox
+
 ## 2026-07-15 23:50 - session continues (opus 4.8 -> fable 5): SHIPPED to lynka.xyz
 
 ### done and verified (fifth wave)

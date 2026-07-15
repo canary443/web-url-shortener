@@ -1,0 +1,74 @@
+<!-- supabase auth template: confirm signup with an otp code.
+     paste into dashboard -> authentication -> emails -> confirm signup.
+     table layout + inline styles only, so gmail/outlook/apple mail all
+     render it the same. {{ .Token }} is replaced by gotrue -->
+<html>
+  <body style="margin:0;padding:0;background-color:#f4f4f5;">
+    <!-- hidden preheader, shows as the inbox preview line -->
+    <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">
+      your lynka confirmation code is {{ .Token }}
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+
+            <!-- keycap logo -->
+            <tr>
+              <td align="center" style="padding-bottom:24px;">
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="background-color:#ffffff;border:1px solid #e4e4e7;border-radius:8px;width:30px;height:30px;text-align:center;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;color:#08090c;">l</td>
+                    <td style="width:5px;"></td>
+                    <td style="background-color:#ffffff;border:1px solid #e4e4e7;border-radius:8px;width:30px;height:30px;text-align:center;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;color:#08090c;">y</td>
+                    <td style="width:5px;"></td>
+                    <td style="background-color:#ffffff;border:1px solid #e4e4e7;border-radius:8px;width:30px;height:30px;text-align:center;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;color:#08090c;">n</td>
+                    <td style="width:5px;"></td>
+                    <td style="background-color:#ffffff;border:1px solid #e4e4e7;border-radius:8px;width:30px;height:30px;text-align:center;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;color:#08090c;">k</td>
+                    <td style="width:5px;"></td>
+                    <td style="background-color:#ffffff;border:1px solid #e4e4e7;border-radius:8px;width:30px;height:30px;text-align:center;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;color:#08090c;">a</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- tinted hero card -->
+            <tr>
+              <td style="background-color:#ddfbff;border-radius:24px;padding:40px 32px;text-align:center;">
+                <p style="margin:0 0 12px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;font-weight:600;color:#076e99;">one last step</p>
+                <h1 style="margin:0 0 8px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:26px;font-weight:700;color:#08090c;">confirm your <em>lynka</em> account</h1>
+                <p style="margin:0 0 28px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.6;color:#52525b;">enter this code on the sign up screen:</p>
+
+                <!-- the code -->
+                <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+                  <tr>
+                    <td style="background-color:#ffffff;border:1px solid #cbeef7;border-radius:16px;padding:18px 28px;">
+                      <span style="font-family:'SF Mono','Roboto Mono',Menlo,Consolas,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#08090c;">{{ .Token }}</span>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:28px 0 0;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.6;color:#52525b;">the code works for 60 minutes.<br>didn't create an account? just ignore this email.</p>
+              </td>
+            </tr>
+
+            <!-- footer -->
+            <tr>
+              <td align="center" style="padding:28px 16px 0;">
+                <p style="margin:0 0 6px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:12px;color:#8e8e8e;">
+                  <a href="https://lynka.xyz" style="color:#076e99;text-decoration:none;font-weight:600;">lynka.xyz</a>
+                  &nbsp;&middot;&nbsp; short links, no noise
+                </p>
+                <p style="margin:0;font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:12px;color:#8e8e8e;">
+                  questions? <a href="mailto:a@leet-cheats.xyz" style="color:#076e99;text-decoration:none;">a@leet-cheats.xyz</a>
+                  &nbsp;&middot;&nbsp; telegram <a href="https://t.me/aimwork" style="color:#076e99;text-decoration:none;">@aimwork</a>
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
