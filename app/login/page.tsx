@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { passwordIsPwned } from "@/lib/pwned";
 import { Turnstile, turnstileEnabled } from "@/components/turnstile";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "confirm";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaRound, setCaptchaRound] = useState(0);
+  const [confirmCode, setConfirmCode] = useState("");
 
   function consumeCaptcha() {
     // turnstile tokens are single use, remount the widget for the next try
@@ -62,6 +64,14 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } else {
+      // free-plan stand-in for the supabase leaked password toggle
+      if (await passwordIsPwned(password)) {
+        setError(
+          "this password shows up in known data breaches. pick a different one."
+        );
+        setBusy(false);
+        return;
+      }
       const { data, error } = await sb.auth.signUp({ email, password, options });
       consumeCaptcha();
       if (error) {
@@ -75,11 +85,51 @@ export default function LoginPage() {
         if (data.session) {
           router.push("/dashboard");
         } else {
-          setNotice("check your email to confirm the account. look in spam if it is not in your inbox.");
+          setMode("confirm");
+          setNotice("we sent an 8 digit code to your email. spam folder counts too.");
         }
       }
     }
     setBusy(false);
+  }
+
+  async function confirmSignup(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy || !confirmCode.trim()) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+
+    const sb = supabase();
+    const token = confirmCode.trim();
+    // older gotrue wants type signup for the code, newer consolidates on email
+    let result = await sb.auth.verifyOtp({ email, token, type: "signup" });
+    if (result.error) {
+      result = await sb.auth.verifyOtp({ email, token, type: "email" });
+    }
+    if (result.error) {
+      setError(result.error.message.toLowerCase());
+    } else {
+      router.push("/dashboard");
+    }
+    setBusy(false);
+  }
+
+  async function resendCode() {
+    if (busy) return;
+    setError(null);
+    setNotice(null);
+    const { error } = await supabase().auth.resend({
+      type: "signup",
+      email,
+      ...(captchaToken ? { options: { captchaToken } } : {}),
+    });
+    consumeCaptcha();
+    if (error) {
+      setError(error.message.toLowerCase());
+    } else {
+      setNotice("code sent again. give it a minute and check spam.");
+    }
   }
 
   async function github() {
@@ -112,14 +162,76 @@ export default function LoginPage() {
   return (
     <div className="rise-seq mx-auto w-full max-w-sm px-5 pt-20 pb-24">
       <h1 className="text-2xl font-semibold tracking-tight">
-        {mode === "signin" ? "sign in" : "create account"}
+        {mode === "signin"
+          ? "sign in"
+          : mode === "signup"
+            ? "create account"
+            : "check your email"}
       </h1>
       <p className="mt-2 text-sm text-muted">
         {mode === "signin"
           ? "your links are waiting."
-          : "links for 31 days, with click counts."}
+          : mode === "signup"
+            ? "links for 31 days, with click counts."
+            : `enter the 8 digit code we sent to ${email}.`}
       </p>
 
+      {mode === "confirm" && (
+        <form onSubmit={confirmSignup} className="mt-8 flex flex-col gap-3">
+          <label htmlFor="confirm-code" className="sr-only">
+            confirmation code
+          </label>
+          <input
+            id="confirm-code"
+            type="text"
+            required
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="12345678"
+            maxLength={8}
+            value={confirmCode}
+            onChange={(e) => setConfirmCode(e.target.value.replace(/\D/g, ""))}
+            className="h-11 rounded-md border border-line bg-surface px-4 text-center font-mono text-base tracking-[0.4em] text-foreground placeholder:text-muted placeholder:tracking-[0.4em] focus-visible:outline-2 focus-visible:outline-accent-ink"
+          />
+          <button
+            type="submit"
+            disabled={busy || confirmCode.length < 6}
+            className="mt-1 h-11 cursor-pointer rounded-md bg-foreground text-sm font-medium text-background transition-opacity hover:opacity-85 disabled:cursor-default disabled:opacity-50"
+          >
+            {busy ? "working…" : "confirm"}
+          </button>
+          <Turnstile
+            key={captchaRound}
+            onToken={setCaptchaToken}
+            onExpire={() => setCaptchaToken(null)}
+          />
+          <div className="flex items-center justify-between text-sm text-muted">
+            <button
+              type="button"
+              onClick={() => void resendCode()}
+              disabled={busy || (turnstileEnabled() && !captchaToken)}
+              className="cursor-pointer underline-offset-4 hover:text-foreground hover:underline disabled:cursor-default disabled:opacity-50"
+            >
+              send the code again
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("signup");
+                setConfirmCode("");
+                setError(null);
+                setNotice(null);
+              }}
+              className="cursor-pointer underline-offset-4 hover:text-foreground hover:underline"
+            >
+              start over
+            </button>
+          </div>
+        </form>
+      )}
+
+      {mode !== "confirm" && (
+      <>
       <button
         type="button"
         onClick={github}
@@ -158,7 +270,7 @@ export default function LoginPage() {
           id="password"
           type="password"
           required
-          minLength={6}
+          minLength={mode === "signin" ? 6 : 8}
           autoComplete={mode === "signin" ? "current-password" : "new-password"}
           placeholder="password"
           value={password}
@@ -214,6 +326,8 @@ export default function LoginPage() {
               : "create account"}
         </button>
       </form>
+      </>
+      )}
 
       {error && (
         <p role="alert" className="mt-4 text-sm text-danger">
@@ -236,21 +350,23 @@ export default function LoginPage() {
         </p>
       )}
 
-      <p className="mt-8 text-sm text-muted">
-        {mode === "signin" ? "no account yet?" : "already have an account?"}{" "}
-        <button
-          type="button"
-          onClick={() => {
-            setMode(mode === "signin" ? "signup" : "signin");
-            setAcceptedTerms(false);
-            setError(null);
-            setNotice(null);
-          }}
-          className="cursor-pointer text-foreground underline-offset-4 hover:underline"
-        >
-          {mode === "signin" ? "create one" : "sign in"}
-        </button>
-      </p>
+      {mode !== "confirm" && (
+        <p className="mt-8 text-sm text-muted">
+          {mode === "signin" ? "no account yet?" : "already have an account?"}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setMode(mode === "signin" ? "signup" : "signin");
+              setAcceptedTerms(false);
+              setError(null);
+              setNotice(null);
+            }}
+            className="cursor-pointer text-foreground underline-offset-4 hover:underline"
+          >
+            {mode === "signin" ? "create one" : "sign in"}
+          </button>
+        </p>
+      )}
     </div>
   );
 }
