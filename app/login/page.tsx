@@ -133,6 +133,11 @@ export default function LoginPage() {
   }
 
   async function github() {
+    // registration through github accepts the same terms as the email path
+    if (mode === "signup" && !acceptedTerms) {
+      setError("tick the terms checkbox below first.");
+      return;
+    }
     setError(null);
     await supabase().auth.signInWithOAuth({
       provider: "github",
