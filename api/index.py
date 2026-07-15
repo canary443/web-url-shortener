@@ -483,7 +483,7 @@ def _count_click(code: str) -> None:
 @app.get("/{code}")
 def redirect(code: str, background: BackgroundTasks):
     if not CODE_RE.fullmatch(code):
-        return RedirectResponse(url="/?notfound=1", status_code=302)
+        return RedirectResponse(url="/404", status_code=302)
 
     result = (
         client()
@@ -494,13 +494,13 @@ def redirect(code: str, background: BackgroundTasks):
         .execute()
     )
     if not result.data:
-        return RedirectResponse(url="/?notfound=1", status_code=302)
+        return RedirectResponse(url="/404", status_code=302)
 
     link = result.data[0]
     if link["expires_at"] is not None:
         expires = datetime.fromisoformat(link["expires_at"])
         if expires < datetime.now(timezone.utc):
-            return RedirectResponse(url="/?notfound=1", status_code=302)
+            return RedirectResponse(url="/404", status_code=302)
 
     if link_policy.collects_clicks(link["user_id"]):
         background.add_task(_count_click, code)

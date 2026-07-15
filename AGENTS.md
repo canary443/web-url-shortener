@@ -125,7 +125,7 @@ one vercel project serves both frontend and backend:
 | POST | /api/py/admin/users/{id}/suspend | admin | gotrue ban (days or permanent), optional link wipe, optional email |
 | POST | /api/py/admin/users/{id}/unsuspend | admin | lifts the ban, optional email |
 | DELETE | /api/py/admin/links/{id} | admin | force delete any link |
-| GET | /{code} | no | 302 to target, expired/missing -> 302 `/?notfound=1`, click counted in background for signed-in links |
+| GET | /{code} | no | 302 to target, expired/missing -> 302 `/404` (the custom not-found page), click counted in background for signed-in links |
 
 read endpoints rate limit through `allow_read` (fails open on db hiccups), write
 endpoints stay strict. shorten/delete log into `api_events` via background tasks

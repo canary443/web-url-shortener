@@ -1,7 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { accessToken } from "@/lib/supabase";
 import { Turnstile } from "@/components/turnstile";
 
@@ -11,16 +10,6 @@ type ShortenResult = {
   expires_at: string | null;
   owned: boolean;
 };
-
-function NotFoundNotice() {
-  const params = useSearchParams();
-  if (!params.get("notfound")) return null;
-  return (
-    <p className="mb-6 rounded-xl bg-background/80 px-4 py-3 text-sm text-muted backdrop-blur">
-      that link does not exist or has expired.
-    </p>
-  );
-}
 
 export function ShortenForm() {
   const [url, setUrl] = useState("");
@@ -87,10 +76,6 @@ export function ShortenForm() {
 
   return (
     <div className="w-full">
-      <Suspense fallback={null}>
-        <NotFoundNotice />
-      </Suspense>
-
       <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row">
         <label htmlFor="url" className="sr-only">
           url to shorten
