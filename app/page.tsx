@@ -77,22 +77,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* the same object on small screens, in flow under the form */}
-          <div
-            className="hero-arrive pointer-events-none relative mt-10 -mb-2 flex justify-end pr-1 lg:hidden"
-            aria-hidden
-          >
-            <div className="art-float w-44 sm:w-60">
-              <Image
-                src="/banners/hero.webp"
-                alt=""
-                width={720}
-                height={720}
-                priority
-                className="h-auto w-full"
-              />
-            </div>
-          </div>
 
           {/* facts strip pinned to the container bottom */}
           <ul className="fact-seq relative z-10 mt-12 flex flex-wrap gap-2">
@@ -117,13 +101,13 @@ export default function Home() {
         <div className="mt-10 grid gap-4 lg:grid-cols-2">
           <Reveal className="lift group relative overflow-hidden rounded-2xl bg-surface p-8 pb-20">
             <p className="text-2xl font-bold tracking-tight">no account</p>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted lg:max-w-[17rem] xl:max-w-sm">
               paste a url and get a code, nothing else asked. anonymous links
               live for 60 minutes and keep no click statistics. 10 links per
               hour.
             </p>
             <div
-              className="art-float pointer-events-none absolute right-5 bottom-4 w-24 sm:right-8 sm:top-1/2 sm:bottom-auto sm:w-32 sm:-translate-y-1/2"
+              className="art-float pointer-events-none absolute right-5 bottom-4 w-24 sm:right-8 sm:top-1/2 sm:bottom-auto sm:w-32 sm:-translate-y-1/2 lg:w-24 xl:w-32"
               aria-hidden
             >
               <Image
@@ -141,13 +125,13 @@ export default function Home() {
               className="lift group relative block h-full overflow-hidden rounded-2xl bg-surface p-8 pb-20 focus-visible:outline-2 focus-visible:outline-accent-ink"
             >
               <p className="text-2xl font-bold tracking-tight">signed in</p>
-              <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
+              <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted lg:max-w-[17rem] xl:max-w-sm">
                 links live for 31 days and count their clicks. copy, watch and
                 delete everything from one dashboard. 5 requests per minute,
                 github or email to get in.
               </p>
               <div
-                className="art-float-2 pointer-events-none absolute right-16 bottom-2 w-24 sm:right-10 sm:top-8 sm:bottom-auto sm:w-28"
+                className="art-float-2 pointer-events-none absolute right-16 bottom-2 w-24 sm:right-10 sm:top-8 sm:bottom-auto sm:w-28 lg:w-24 xl:w-28"
                 aria-hidden
               >
                 <Image
@@ -168,14 +152,16 @@ export default function Home() {
               href="/dashboard"
               className="lift group relative block h-full overflow-hidden rounded-2xl bg-frame focus-visible:outline-2 focus-visible:outline-accent-ink"
             >
-              {/* soft cyan glow behind the icon so the black card has depth */}
+              {/* soft cyan glow behind the icon so the black card has depth.
+                  transform-gpu pins it to its own layer, hover lifts used to
+                  make the blur flicker */}
               <div
-                className="pointer-events-none absolute -right-10 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-accent/15 blur-3xl"
+                className="pointer-events-none absolute -right-10 top-1/2 h-72 w-72 -translate-y-1/2 transform-gpu rounded-full bg-accent/15 blur-3xl"
                 aria-hidden
               />
               {hasIcon("icon-dashboard") && (
                 <div
-                  className="art-float pointer-events-none absolute right-6 top-1/2 w-36 -translate-y-1/2 sm:right-12 sm:w-48"
+                  className="art-float pointer-events-none absolute right-6 top-1/2 w-36 -translate-y-1/2 transform-gpu sm:right-12 sm:w-48 lg:w-36 xl:w-48"
                   aria-hidden
                 >
                   <Image
@@ -205,13 +191,13 @@ export default function Home() {
             <p className="text-2xl font-bold tracking-tight">
               nothing watching
             </p>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted lg:max-w-[17rem] xl:max-w-sm">
               no trackers, no analytics scripts, no ad pixels. cookies exist
               only to keep you signed in. the source is public under agpl-3.0.
             </p>
             {hasIcon("icon-privacy") && (
               <div
-                className="art-float-3 pointer-events-none absolute right-5 bottom-4 w-24 sm:right-8 sm:top-1/2 sm:bottom-auto sm:w-32 sm:-translate-y-1/2"
+                className="art-float-3 pointer-events-none absolute right-5 bottom-4 w-24 sm:right-8 sm:top-1/2 sm:bottom-auto sm:w-32 sm:-translate-y-1/2 lg:w-24 xl:w-32"
                 aria-hidden
               >
                 <Image

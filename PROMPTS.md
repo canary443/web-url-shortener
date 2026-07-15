@@ -42,11 +42,12 @@ watermark, no people, no hands, no extra floating debris.
     cyan crown and marker, small near-black accents (60 minute lifetime)
   - icon-stats: three rounded pillars of different heights on a white ceramic
     base, pale/vivid/deep cyan (click statistics)
-  - icon-privacy: smooth closed dome shield, white ceramic, one vivid cyan
-    ring, matte near-black base (nothing watching)
-  - icon-dashboard: cluster of six rounded keycaps, five glossy black graphite
-    #101318 with white rim light, one glowing vivid cyan from inside, made to
-    sit on the near-black card
+  - icon-privacy: classic rounded heraldic shield, vivid cyan rim, white
+    ring, pale cyan panel, deep cyan check mark (owner-picked over a dome and
+    a closed eye)
+  - icon-dashboard: chunky speedometer gauge, four wedges pale/vivid/deep
+    cyan + glossy near-black, white ceramic needle with chrome pivot, from the
+    owner's reference image, sits on the near-black card
 
 ## links feature artwork (retired, kept for reference)
 

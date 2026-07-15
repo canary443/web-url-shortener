@@ -246,8 +246,17 @@ def generate(
     key = _api_key()
     if direct and exits:
         raise GenerationError("direct mode cannot be combined with mullvad exits")
-    selected_exits: list[str | None] = [None] if direct else _configured_exits(exits)
-    _require_mullvad()
+    # a rotating pool proxy shields the home ip without mullvad
+    custom_proxy = os.environ.get("WILLOW_IMAGE_PROXY", "").strip()
+    if custom_proxy:
+        if direct or exits:
+            raise GenerationError(
+                "WILLOW_IMAGE_PROXY cannot be combined with --direct or mullvad exits"
+            )
+        selected_exits: list[str | None] = [custom_proxy]
+    else:
+        selected_exits = [None] if direct else _configured_exits(exits)
+        _require_mullvad()
     payload = {
         "model": model,
         "prompt": prompt,
@@ -260,18 +269,22 @@ def generate(
     wait_before_request = 0.0
     willow_attempts = 0
     for exit_name in selected_exits:
-        proxy = _proxy_for_exit(exit_name) if exit_name else None
+        if custom_proxy:
+            proxy = custom_proxy
+        else:
+            proxy = _proxy_for_exit(exit_name) if exit_name else None
         try:
             client = _http_client(proxy)
         except (ImportError, ValueError) as err:
             raise GenerationError("mullvad socks support is not installed") from err
 
         with client:
-            try:
-                _verify_mullvad_proxy(client, require_socks=not direct)
-            except GenerationError as err:
-                last_error = str(err)
-                continue
+            if not custom_proxy:
+                try:
+                    _verify_mullvad_proxy(client, require_socks=not direct)
+                except GenerationError as err:
+                    last_error = str(err)
+                    continue
 
             if wait_before_request:
                 time.sleep(wait_before_request)
@@ -308,7 +321,7 @@ def generate(
             return (
                 f"saved {out} ({len(raw) // 1024} kb, {width}x{height}, "
                 f"{quality}, cost ${PRICES[quality]:.3f}, "
-                f"mullvad {'direct' if direct else 'socks'})"
+                f"{'custom proxy' if custom_proxy else 'mullvad ' + ('direct' if direct else 'socks')})"
             )
 
     raise GenerationError(
