@@ -1,24 +1,29 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Fira_Code, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { ChatWidget } from "@/components/chat-widget";
 import { Footer } from "@/components/footer";
 import { Nav } from "@/components/nav";
-import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
-const jbMono = JetBrains_Mono({
-  variable: "--font-jbmono",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const firaCode = Fira_Code({
+  variable: "--font-fira",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "s:// web url shortener",
-  description: "short links without noise. free, fast, open source.",
+  title: "lynka - short links, no noise",
+  description:
+    "a small url shortener. anonymous links live an hour, signed in links 31 days with click counts. no trackers, open source.",
 };
 
 export default function RootLayout({
@@ -29,16 +34,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jbMono.variable} h-full antialiased`}
-      suppressHydrationWarning
+      className={`${inter.variable} ${geistMono.variable} ${firaCode.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <ThemeProvider>
-          <Nav />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatWidget />
-        </ThemeProvider>
+        <Nav />
+        <main className="flex-1">{children}</main>
+        <Footer />
       </body>
     </html>
   );

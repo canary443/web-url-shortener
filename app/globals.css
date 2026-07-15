@@ -1,29 +1,23 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* light theme */
+/* light only, owner decision 2026-07-14: dark mode removed */
+/* palette sampled from live aeza.net: white page, #f4f4f4 cards, #ddfbff hero tint */
 :root {
-  --background: #f6f6f4;
-  --surface: #fdfdfc;
-  --foreground: #15181e;
-  --muted: #676f7d;
-  --line: #e0e1e4;
-  --accent: #158443;
-  --accent-soft: rgba(21, 132, 67, 0.08);
-  --danger: #c92a2a;
-}
-
-/* dark theme, the default */
-.dark {
-  --background: #0b0e14;
-  --surface: #10141c;
-  --foreground: #e8ecf4;
-  --muted: #8a93a6;
-  --line: #222836;
-  --accent: #3ecf6e;
-  --accent-soft: rgba(62, 207, 110, 0.08);
-  --danger: #f27070;
+  --background: #ffffff;
+  --surface: #f4f4f5;
+  --foreground: #0a0b0d;
+  --muted: #62686f;
+  --line: #e8e9eb;
+  --accent: #35c6f4;
+  --accent-tint: #ddfbff;
+  --accent-ink: #076e99;
+  --accent-soft: rgba(53, 198, 244, 0.16);
+  --danger: #d92d20;
+  /* media frames stay black, artwork lives inside them */
+  --frame: #08090c;
+  --frame-line: #1d222e;
+  --frame-fg: #f2f5f9;
+  --frame-muted: #9aa3b2;
 }
 
 @theme inline {
@@ -33,10 +27,18 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-danger: var(--danger);
+  --color-frame: var(--frame);
+  --color-frame-line: var(--frame-line);
+  --color-frame-fg: var(--frame-fg);
+  --color-frame-muted: var(--frame-muted);
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-jbmono);
+  --font-mono: var(--font-geist-mono);
+  /* terminal and code blocks get their own face */
+  --font-code: var(--font-fira);
 }
 
 body {
@@ -49,11 +51,11 @@ body {
   background: var(--accent-soft);
 }
 
-/* single soft entrance used for the shorten result */
+/* entrance used for cards and results */
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -62,7 +64,115 @@ body {
 }
 
 .rise {
-  animation: rise 220ms ease-out;
+  animation: rise 220ms ease-out both;
+}
+
+/* staggered hero entrance, one child after another */
+.rise-seq > * {
+  animation: rise 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.rise-seq > *:nth-child(2) {
+  animation-delay: 90ms;
+}
+.rise-seq > *:nth-child(3) {
+  animation-delay: 180ms;
+}
+.rise-seq > *:nth-child(4) {
+  animation-delay: 270ms;
+}
+.rise-seq > *:nth-child(5) {
+  animation-delay: 360ms;
+}
+
+/* facts arrive as a precise wave after the main hero content */
+@keyframes fact-arrive {
+  0% {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(18px) scale(0.96);
+  }
+  68% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(-2px) scale(1.008);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+.fact-seq > * {
+  opacity: 0;
+  animation: fact-arrive 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 430ms;
+}
+.fact-seq > *:nth-child(2) {
+  animation-delay: 520ms;
+}
+.fact-seq > *:nth-child(3) {
+  animation-delay: 610ms;
+}
+.fact-seq > *:nth-child(4) {
+  animation-delay: 700ms;
+}
+.fact-pill {
+  will-change: transform;
+}
+
+/* keycap tiles hop in a wave when the logo is hovered */
+@keyframes tile-hop {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.logo-tiles .tile {
+  transition: transform 200ms ease;
+}
+.logo-tiles:hover .tile {
+  animation: tile-hop 450ms ease both;
+}
+.logo-tiles:hover .tile:nth-child(2) {
+  animation-delay: 60ms;
+}
+.logo-tiles:hover .tile:nth-child(3) {
+  animation-delay: 120ms;
+}
+.logo-tiles:hover .tile:nth-child(4) {
+  animation-delay: 180ms;
+}
+.logo-tiles:hover .tile:nth-child(5) {
+  animation-delay: 240ms;
+}
+
+/* cards float up a touch on hover */
+.lift {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(10, 11, 13, 0.08);
+}
+
+/* scroll reveal, the Reveal component adds .in when visible */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 500ms ease,
+    transform 500ms ease;
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -71,5 +181,9 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

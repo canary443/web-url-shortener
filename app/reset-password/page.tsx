@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-sm px-5 pt-20 pb-24">
+    <div className="rise-seq mx-auto w-full max-w-sm px-5 pt-20 pb-24">
       <h1 className="text-2xl font-semibold tracking-tight">new password</h1>
       <p className="mt-2 text-sm text-muted">
         pick a new password for your account.
@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
           placeholder="new password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-11 rounded-md border border-line bg-surface px-4 text-sm text-foreground placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent"
+          className="h-11 rounded-md border border-line bg-surface px-4 text-sm text-foreground placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent-ink"
         />
         <button
           type="submit"

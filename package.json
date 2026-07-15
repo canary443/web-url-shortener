@@ -4,9 +4,9 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "scripts": {
-    "dev": "concurrently \"npm run next-dev\" \"npm run fastapi-dev\"",
+    "dev": "concurrently -k \"npm run next-dev\" \"npm run fastapi-dev\"",
     "next-dev": "next dev",
-    "fastapi-dev": "python3 -m uvicorn api.index:app --reload --port 8000",
+    "fastapi-dev": ".venv/bin/python -m uvicorn api.index:app --reload --port 8000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -14,7 +14,6 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.110.5",
     "next": "16.2.10",
-    "next-themes": "^0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

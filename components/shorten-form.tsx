@@ -8,13 +8,14 @@ type ShortenResult = {
   code: string;
   short_url: string;
   expires_at: string | null;
+  owned: boolean;
 };
 
 function NotFoundNotice() {
   const params = useSearchParams();
   if (!params.get("notfound")) return null;
   return (
-    <p className="mb-6 rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted">
+    <p className="mb-6 rounded-xl bg-background/80 px-4 py-3 text-sm text-muted backdrop-blur">
       that link does not exist or has expired.
     </p>
   );
@@ -47,7 +48,7 @@ export function ShortenForm() {
       });
 
       if (res.ok) {
-        setResult(await res.json());
+        setResult({ ...(await res.json()), owned: !!token });
         setUrl("");
       } else if (res.status === 429) {
         setError("rate limit reached. wait a bit and try again.");
@@ -89,12 +90,12 @@ export function ShortenForm() {
           placeholder="paste a long url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="h-12 flex-1 rounded-md border border-line bg-surface px-4 font-mono text-sm text-foreground placeholder:font-sans placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent"
+          className="h-14 flex-1 rounded-xl border border-line bg-background px-5 text-sm text-foreground placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent-ink"
         />
         <button
           type="submit"
           disabled={busy}
-          className="h-12 cursor-pointer rounded-md bg-foreground px-6 text-sm font-medium text-background transition-opacity hover:opacity-85 disabled:cursor-default disabled:opacity-50"
+          className="h-14 cursor-pointer rounded-xl bg-foreground px-8 text-sm font-medium text-background transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-accent-ink disabled:cursor-default disabled:opacity-50"
         >
           {busy ? "working…" : "shorten"}
         </button>
@@ -107,34 +108,29 @@ export function ShortenForm() {
       )}
 
       {result && (
-        <div className="rise mt-6 rounded-md border border-line bg-surface p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <span
-                className="h-2 w-2 shrink-0 rounded-full bg-accent"
-                aria-hidden
-              />
-              <a
-                href={result.short_url}
-                target="_blank"
-                rel="noreferrer"
-                className="truncate font-mono text-sm text-foreground underline-offset-4 hover:underline"
-              >
-                {result.short_url.replace(/^https?:\/\//, "")}
-              </a>
-            </div>
+        <div className="rise mt-6 rounded-2xl bg-background p-6 shadow-sm">
+          <p className="text-sm text-muted">your short link is ready</p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <a
+              href={result.short_url}
+              target="_blank"
+              rel="noreferrer"
+              className="min-w-0 truncate text-xl font-semibold tracking-tight text-foreground underline-offset-4 hover:underline sm:text-2xl"
+            >
+              {result.short_url.replace(/^https?:\/\//, "")}
+            </a>
             <button
               type="button"
               onClick={copy}
-              className="shrink-0 cursor-pointer rounded-md border border-line px-3 py-1.5 text-sm text-foreground transition-colors hover:border-foreground"
+              className="shrink-0 cursor-pointer rounded-xl bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-accent-ink"
             >
-              {copied ? "copied" : "copy"}
+              {copied ? "copied" : "copy link"}
             </button>
           </div>
           <p className="mt-3 text-sm text-muted">
-            {result.expires_at
-              ? "this link lives for one hour. sign in to keep links forever."
-              : "this link is yours, it will not expire."}
+            {result.owned
+              ? "lives for 31 days. watch its clicks on the dashboard."
+              : "lives for 60 minutes, no clicks counted. sign in for 31 days and stats."}
           </p>
         </div>
       )}
