@@ -42,13 +42,26 @@ live in AGENTS.md, this file is only "what happened and what is next".
   supabase confirm-signup template, subject suggestion:
   "confirm your lynka account"
 
+### late fixes (16-07, same session)
+
+- leaked turnstile secret handled: history rewritten (owner approved the
+  force push), owner rotated the secret in cloudflare, the new value is in
+  SECURITY.md and vercel env. the sitekey did not change
+- dead/expired short codes now 302 to /404 (the custom page) instead of
+  /?notfound=1, the home notice was removed as dead code
+- github signup path now demands the terms checkbox as well: the button
+  errors "tick the terms checkbox below first" until it is ticked
+- github oauth bounced to localhost after auth: supabase site url still
+  points at localhost, owner fixes in the dashboard (checklist item 2)
+
 ### owner checklist still open
 
 1. supabase dashboard -> authentication -> attack protection: enable
    captcha, provider turnstile, secret from SECURITY.md (until then login
-   captcha tokens are sent but not enforced). NOTE: the secret briefly hit
-   a public commit on 16-07 and was scrubbed by a history rewrite, owner
-   should rotate it in the cloudflare dash and update vercel + supabase
+   captcha tokens are sent but not enforced)
+2. supabase dashboard -> authentication -> url configuration: site url
+   https://lynka.xyz, additional redirect urls https://lynka.xyz/** and
+   http://localhost:3000/** (fixes github sign in landing on localhost)
 2. supabase smtp form (owner already had it open): host smtp.resend.com,
    port 465, user "resend", password = the resend key, sender
    noreply@lynka.xyz / "lynka". then rate limits -> emails to 120/h
