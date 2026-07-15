@@ -6,23 +6,26 @@ outside git, inspect them, then export the selected images as WebP.
 
 ## hero object
 
-- output: transparent PNG, 4K
-- site target: `public/banners/hero.webp`
+- output: PNG on flat magenta, 4K, background removed afterwards by chroma key
+- site target: `public/banners/hero.webp` (WebP with alpha)
+- gpt-image-2 cannot produce real transparency. ask for one exact flat magenta
+  background (#ff00e6) instead, then key it out: alpha ramps down as
+  min(r, b) - g rises, despill the edge pixels by clamping r and b toward g
 
 ```text
 Create a polished abstract 3D hero object for lynka, a minimal URL shortener. The
 composition is one floating sculptural object built from several interlocking rounded
 ribbons and precise circular link forms, viewed at a gentle three-quarter angle. It
-must read clearly as one intentional object, with generous empty transparent space
-around it and no rectangular background. Use a restrained material palette: white
-ceramic, pale cyan #ddfbff, vivid cyan #35c6f4, deep cyan #076e99, and small areas of
-near-black #0a0b0d. Lighting is clean studio light with crisp soft-edged reflections,
-subtle contact-like ambient shadow inside the object only, high detail, smooth premium
-surfaces, and an institutional technology aesthetic. The shape should suggest links,
-routing, and connected paths without using a literal chain icon. Isolated on a fully
-transparent background. No text, no letters, no numbers, no logos, no watermark, no
-people, no hands, no browser window, no interface screenshot, no extra floating debris,
-no gradient background, no purple, no green, no orange.
+must read clearly as one intentional object with generous empty space around it. Use a
+restrained material palette on the object only: white ceramic, pale cyan #ddfbff, vivid
+cyan #35c6f4, deep cyan #076e99, and small areas of near-black #0a0b0d. Lighting is
+clean studio light with crisp soft-edged reflections, high detail, smooth premium
+surfaces, an institutional technology aesthetic. The shape should suggest links,
+routing and connected paths without a literal chain icon. The background must be one
+exact flat uniform solid color: vivid magenta #ff00e6, completely even edge to edge, no
+gradient, no vignette, and no shadow cast onto it. The object itself must contain no
+magenta, no pink and no purple anywhere. No text, no letters, no numbers, no logos, no
+watermark, no people, no hands, no extra floating debris.
 ```
 
 ## links feature artwork

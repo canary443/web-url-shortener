@@ -1,6 +1,6 @@
 # web-url-shortener
 
-minimal url shortener with an ai support chat. web version of [cli-url-shortener](https://github.com/canary443/cli-url-shortener).
+minimal url shortener with account dashboards and api access. web version of [cli-url-shortener](https://github.com/canary443/cli-url-shortener).
 
 work in progress, proper readme coming with the first deploy.
 
