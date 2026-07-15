@@ -177,7 +177,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-5">
+    <div className="mx-auto w-full max-w-7xl px-4 pt-4 pb-24 sm:px-5">
       <section className="relative overflow-hidden rounded-3xl bg-accent-tint px-6 py-10 sm:px-10">
         <div className="rise-seq">
           <p className="text-sm font-medium text-accent-ink">admin</p>
