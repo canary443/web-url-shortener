@@ -4,42 +4,67 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "lynka privacy policy",
   description:
-    "what lynka stores, where it lives and how to get it removed. german law, eu data.",
+    "what lynka stores, on what legal basis, where it lives and how to get it removed. german law, eu data.",
 };
 
 const sections = [
   {
     title: "the short version",
     body: [
-      "lynka follows german data protection law (dsgvo / gdpr). all data is stored in the eu: the database runs on supabase in frankfurt (eu-central-1).",
-      "there are no trackers, no analytics scripts, no ad pixels and no third party embeds on this site.",
+      "lynka follows the eu general data protection regulation (gdpr) and german data protection law (bdsg). the database and authentication run on supabase in frankfurt, germany (aws eu-central-1).",
+      "there are no trackers, no analytics scripts, no ad pixels, no fingerprinting and no third party embeds on this site. we collect the minimum needed to run a link shortener and to keep it from being abused.",
     ],
   },
   {
-    title: "what we store",
+    title: "who is responsible",
     body: [
-      "links: the target url, the short code, creation time and expiry time. for signed in users also a click counter. anonymous links keep no click statistics at all.",
-      "accounts: your email address and a password hash, both handled by supabase auth. github sign in shares only the email.",
-      "rate limiting: short lived counters keyed by ip address for anonymous requests and by account id for signed in ones. counters are deleted after at most a day.",
-      "abuse prevention: when an email account is registered, we store the signup ip address, time and a protected fingerprint of the email for 30 days. this helps identify automated registrations and attempts to avoid account limits. the log is private and is not available through the site or api.",
-      "cookies exist only to keep you signed in. no consent banner is needed because there is nothing to consent to.",
+      "the controller for this service is the operator of lynka, reachable at a@leet-cheats.xyz or telegram @aimwork. contact us for anything in this policy, including exercising your rights. we answer within the statutory deadlines (usually one month).",
+    ],
+  },
+  {
+    title: "what we store and why",
+    body: [
+      "links: the target url, the short code, creation time, expiry time and, for signed in users, a click counter. legal basis: performance of the service you request (art. 6(1)(b) gdpr). anonymous links keep no click statistics and are not connected to your identity by us.",
+      "accounts: your email address and a password hash, both handled by supabase auth. github sign in shares only your email address with us. legal basis: art. 6(1)(b) gdpr.",
+      "api keys: stored only as a cryptographic hash. the full key is shown to you once and cannot be read by us afterwards. a private log of your own api actions (action, short code, time) is kept for your dashboard. legal basis: art. 6(1)(b) gdpr.",
+      "rate limiting: short lived counters keyed by ip address for anonymous requests and by account id for signed in ones. legal basis: our legitimate interest in keeping the service available (art. 6(1)(f) gdpr).",
+      "abuse prevention: when an account is registered, we store the signup ip address, time and a keyed fingerprint of the email (not the email itself) for 30 days. this identifies automated registrations and attempts to evade limits. legal basis: art. 6(1)(f) gdpr, the legitimate interest of protecting users and the service. you can object to this processing (see your rights).",
+      "cookies: only strictly necessary session cookies that keep you signed in. no consent banner is required for these (sec. 25(2) ttdsg), and there is nothing else to consent to.",
     ],
   },
   {
     title: "how long",
     body: [
-      "anonymous links are deleted automatically after 60 minutes. signed in and api links are deleted after 31 days. deleting a link in the dashboard removes it immediately.",
+      "anonymous links: deleted automatically after 60 minutes. signed in and api links: deleted after 31 days. deleting a link in the dashboard removes it immediately.",
+      "rate limit counters: at most 1 day. signup abuse records: 30 days. api activity log: 30 days. account data: until you delete the account or ask us to.",
+    ],
+  },
+  {
+    title: "who processes data for us",
+    body: [
+      "supabase (database and authentication), hosted in frankfurt, germany. vercel (website hosting and delivery), which processes technical request data such as ip addresses in short lived server logs; depending on where you connect from, vercel may process such data outside the eu under the eu standard contractual clauses. we have data processing agreements with both providers.",
+      "we never sell data, never share it for advertising and never transfer it to anyone else unless the law requires it.",
     ],
   },
   {
     title: "your rights",
     body: [
-      "under the gdpr you can request access to, correction of, or deletion of your data at any time. links you own can be deleted in the dashboard yourself. for account deletion or any other request contact us and it will be handled within the legal deadline. processing needed to prevent abuse is based on our legitimate interest in protecting users and the service.",
+      "under art. 15 to 21 gdpr you can request access to your data, correction, deletion, restriction of processing, a portable copy, and you can object to processing based on legitimate interest.",
+      "links you own can be deleted in the dashboard yourself, and your password can be changed there too. for account deletion or any other request contact us; identity is verified through the account email.",
+      "you also have the right to complain to a data protection supervisory authority (art. 77 gdpr), for example the authority of the german state you live in.",
     ],
   },
   {
-    title: "contact",
+    title: "security and automated decisions",
     body: [
+      "connections are encrypted with tls. passwords and api keys are stored only as hashes. database access is restricted with row level security, and the frontend never receives service credentials.",
+      "there is no profiling and no automated decision making with legal effect (art. 22 gdpr). redirects and rate limits apply the same technical rules to everyone.",
+    ],
+  },
+  {
+    title: "changes and contact",
+    body: [
+      "if this policy changes, the new version appears on this page with an updated date. material changes are announced on the home page.",
       "telegram @aimwork or a@leet-cheats.xyz. the same contacts work for support and for raising your api rate limit.",
     ],
   },
