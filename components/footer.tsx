@@ -84,12 +84,6 @@ export function Footer() {
           </nav>
         ))}
       </div>
-      <div className="border-t border-line">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-5 py-5 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>lynka - short links, no noise</p>
-          <p>anon 60 min · signed in 31 days · api 5 rpm</p>
-        </div>
-      </div>
     </footer>
   );
 }

@@ -23,7 +23,7 @@ export function Nav() {
         <Link
           href="/"
           aria-label="lynka home"
-          className="rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-accent-ink"
+          className="rounded-lg p-1 -m-1 focus-visible:outline-2 focus-visible:outline-accent-ink"
         >
           <Logo />
         </Link>

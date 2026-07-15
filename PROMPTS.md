@@ -28,10 +28,30 @@ magenta, no pink and no purple anywhere. No text, no letters, no numbers, no log
 watermark, no people, no hands, no extra floating debris.
 ```
 
-## links feature artwork
+## card icons (replaced the full-bleed links artwork on 2026-07-15)
+
+- output: PNG on flat magenta, 2K each, keyed to alpha, trimmed webp ~480px wide
+- site targets: `public/banners/icon-anon.webp`, `icon-stats.webp`,
+  `icon-privacy.webp`, `icon-dashboard.webp` (the last one sits on the black card)
+- every prompt ends with the shared tail: centered composition with very
+  generous empty margins, object fills roughly half the frame, clean studio
+  light, institutional aesthetic, exact flat #ff00e6 background, no magenta or
+  purple in the object, no text/logos/people
+- concepts:
+  - icon-anon: abstract stopwatch, white ceramic ring, pale cyan face, vivid
+    cyan crown and marker, small near-black accents (60 minute lifetime)
+  - icon-stats: three rounded pillars of different heights on a white ceramic
+    base, pale/vivid/deep cyan (click statistics)
+  - icon-privacy: smooth closed dome shield, white ceramic, one vivid cyan
+    ring, matte near-black base (nothing watching)
+  - icon-dashboard: cluster of six rounded keycaps, five glossy black graphite
+    #101318 with white rim light, one glowing vivid cyan from inside, made to
+    sit on the near-black card
+
+## links feature artwork (retired, kept for reference)
 
 - output: PNG, 2K
-- site target: `public/banners/links.webp`
+- site target: `public/banners/links.webp` (no longer used on the page)
 
 ```text
 Create a wide abstract 3D feature image for lynka inside a near-black #08090c world.
