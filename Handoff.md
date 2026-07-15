@@ -40,12 +40,16 @@ live in AGENTS.md, this file is only "what happened and what is next".
 
 ### in progress / blocked
 
-- hero art: 2 gpt-image-2 variants on flat magenta #ff00e6 (then keyed to
-  alpha). first attempt failed upstream (429 then 502, willow flaky again),
-  retrying. owner explicitly allowed direct calls from their own ip this
-  session (mullvad was off and the permission classifier refused to connect
-  it). candidate v6 (already keyed) sits in tmp/imagegen/. spend so far this
-  session: possibly up to ~$0.01 for the dispatched 502
+- hero art: DONE with v6. the keyed v6 object shipped as
+  public/banners/hero.webp (58 kb, alpha, verified rendering on the tinted
+  band at 1440). willow was near-dead all evening (429/502/524, 4k never fits
+  their cloudflare window), one 2k retry finally produced hero-v7.png
+  (tmp/imagegen/, keyed, spare candidate - busier composition, v6 chosen).
+  owner explicitly allowed direct calls from their own ip this session
+  (mullvad off, classifier refused to connect it). paid: $0.005 confirmed
+  (v7 success), plus up to $0.015 possibly charged on two failed dispatches
+- gotcha that cost an hour: next 16 dev caches optimized images in
+  .next/dev/cache/images, see MEMORY.md
 - migrations STILL not applied to live db: 20260714_link_expiry_keepalive.sql,
   20260715_account_api_keys.sql, 20260715_signup_abuse_events.sql. supabase
   mcp is NOT connected in this session (checked), no db password/sbp token in
@@ -58,13 +62,11 @@ live in AGENTS.md, this file is only "what happened and what is next".
 
 ### next steps
 
-1. finish hero art when willow recovers, owner picks v6/v7/v8, webp with alpha
-   to public/banners/hero.webp, screenshot home at 1440/375
-2. scripts/qa.sh full gate + playwright light screenshots of all 7 pages, fix
-   whatever shows, push everything
-3. apply migrations (see blocked), then re-verify: api-key create flow e2e,
+1. apply migrations (see blocked), then re-verify: api-key create flow e2e,
    /logs filling, old links get expiry, keepalive row next morning
-4. then the old queue: vercel deploy (fra1, envs per SECURITY.md), verify the
+2. optional: swap hero to v7 (tmp/imagegen/hero-v7.png) if the owner prefers
+   it, same webp pipeline (see PROMPTS.md)
+3. then the old queue: vercel deploy (fra1, envs per SECURITY.md), verify the
    /:code rewrite on prod (CODE_REVIEW.md finding 1, high), readme via
    humanizer, github actions ci
 
