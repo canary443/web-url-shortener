@@ -1,3 +1,5 @@
 # dev-only deps for the willow-image mcp server, not deployed
 mcp==1.14.1
-httpx==0.28.1
+httpx[socks]==0.28.1
+sse-starlette==2.4.1
+starlette==0.47.3
