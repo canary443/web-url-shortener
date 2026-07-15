@@ -49,6 +49,17 @@ watermark, no people, no hands, no extra floating debris.
     cyan + glossy near-black, white ceramic needle with chrome pivot, from the
     owner's reference image, sits on the near-black card
 
+## 404 icon (added 2026-07-15)
+
+- output: PNG on flat magenta, 2K, keyed to alpha, trimmed webp 800px wide
+- site target: `public/banners/icon-404.webp` (floats on the 404 tinted container)
+- concept: one chain link cleanly snapped open, two halves pulled slightly
+  apart. white ceramic body, pale cyan inner face, vivid cyan rim accent,
+  deep cyan break faces, one near-black accent ring. same shared tail as the
+  card icons (centered, generous margins, studio light, flat #ff00e6)
+- generated first try through the rotating proxy, keyed with the standard
+  min(r,b)-g ramp plus background unmix, $0.005
+
 ## links feature artwork (retired, kept for reference)
 
 - output: PNG, 2K
