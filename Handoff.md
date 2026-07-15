@@ -4,6 +4,39 @@ running log of project state for anyone (human or agent) picking up the work.
 newest entry on top. update after every 5-10 changes. architecture and rules
 live in AGENTS.md, this file is only "what happened and what is next".
 
+## 2026-07-15 20:00 - session continues (claude fable 5): admin panel, paid plans, icons, legal
+
+### done and verified (second wave, commits a7ff1a2..b19ab7f + follow-ups)
+
+- ADMIN PANEL shipped and live-tested end to end against real gotrue: /admin
+  page (users list with link counts and ban status, suspend with days/reason/
+  delete-links, unsuspend, link search, force delete). backend admin.py +
+  mailer.py (optional smtp, silently skipped when unset), access via
+  ADMIN_EMAILS env (owner must add their email + vercel env). suspend really
+  bans sign in ("User is banned"), verified with the owner-approved qa-target
+  account. 10 route tests
+- paid upgrades: terms and privacy now describe individually agreed higher
+  limits with crypto payment, no payments through the site itself. legality
+  researched: accepting crypto directly for own services needs no bafin
+  license; BUT commercial sites need a full impressum (name + address) and
+  business/tax registration, owner briefed in chat
+- home art: card icons in the little-device style the owner likes (stopwatch,
+  bar pillars), keycap cluster and dome shield REJECTED by owner, replacements
+  (closed eye for privacy, ceramic mini-dashboard for the black card)
+  generating at session end. black card temporarily shows glow only
+- animations: hero entrance (rise from blur, then slow drift), mobile hero
+  added (was hidden below lg), icon float with staggered phases, black route
+  lines drawing on the closing card, stat count-up + sort toggle + staggered
+  rows on the dashboard, footer bottom bar removed, nav logo flicker fixed
+  (opacity hover fought the tile hop over backdrop-blur)
+- global reduced-motion fix: animation-delay is now also zeroed, delayed
+  entrances no longer hold elements invisible
+- smtp for custom auth emails (owner question answered): free tier of resend
+  or brevo + dns records on the future domain, then supabase dashboard ->
+  auth -> smtp + email templates. same creds into SMTP_* env vars make the
+  admin suspension emails work
+- qa gate green after everything, all widths 375-1680 sweep clean
+
 ## 2026-07-15 17:00 - mid-session (claude fable 5): dashboard fixed + reworked, tree committed
 
 ### done and verified this session
