@@ -125,7 +125,8 @@ body {
   will-change: transform;
 }
 
-/* keycap tiles hop in a wave when the logo is hovered */
+/* keycap tiles hop in a wave once per hover. the .waving class is toggled in
+   js so the wave always completes even when the pointer leaves mid-hop */
 @keyframes tile-hop {
   0% {
     transform: translateY(0);
@@ -137,22 +138,19 @@ body {
     transform: translateY(0);
   }
 }
-.logo-tiles .tile {
-  transition: transform 200ms ease;
-}
-.logo-tiles:hover .tile {
+.logo-tiles.waving .tile {
   animation: tile-hop 450ms ease both;
 }
-.logo-tiles:hover .tile:nth-child(2) {
+.logo-tiles.waving .tile:nth-child(2) {
   animation-delay: 60ms;
 }
-.logo-tiles:hover .tile:nth-child(3) {
+.logo-tiles.waving .tile:nth-child(3) {
   animation-delay: 120ms;
 }
-.logo-tiles:hover .tile:nth-child(4) {
+.logo-tiles.waving .tile:nth-child(4) {
   animation-delay: 180ms;
 }
-.logo-tiles:hover .tile:nth-child(5) {
+.logo-tiles.waving .tile:nth-child(5) {
   animation-delay: 240ms;
 }
 

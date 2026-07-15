@@ -90,12 +90,12 @@ export function ShortenForm() {
           placeholder="paste a long url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="h-14 flex-1 rounded-xl border border-line bg-background px-5 text-sm text-foreground placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent-ink"
+          className="h-14 w-full min-w-0 appearance-none rounded-xl border border-line bg-background px-5 text-base text-foreground placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent-ink sm:flex-1 sm:text-sm"
         />
         <button
           type="submit"
           disabled={busy}
-          className="h-14 cursor-pointer rounded-xl bg-foreground px-8 text-sm font-medium text-background transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-accent-ink disabled:cursor-default disabled:opacity-50"
+          className="h-14 cursor-pointer rounded-xl bg-foreground px-8 text-base font-medium text-background transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-accent-ink disabled:cursor-default disabled:opacity-50 sm:text-sm"
         >
           {busy ? "working…" : "shorten"}
         </button>

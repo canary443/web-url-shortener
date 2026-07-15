@@ -277,38 +277,38 @@ export default function Home() {
           <div className="relative overflow-hidden rounded-3xl bg-surface px-6 py-14 text-center sm:px-12 sm:py-20">
             {/* thin black route lines, drawn on reveal */}
             <svg
-              className="route-line pointer-events-none absolute left-0 top-1/2 hidden -translate-y-1/2 text-foreground sm:block"
-              width="230"
+              className="route-line pointer-events-none absolute left-0 top-1/2 hidden -translate-y-1/2 text-foreground xl:block"
+              width="190"
               height="170"
-              viewBox="0 0 230 170"
+              viewBox="0 0 190 170"
               fill="none"
               aria-hidden
             >
               <path
-                d="M0 24 H86 Q98 24 98 36 V118 Q98 130 110 130 H176"
+                d="M0 24 H66 Q78 24 78 36 V118 Q78 130 90 130 H136"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 pathLength="400"
               />
-              <circle cx="186" cy="130" r="5" fill="currentColor" />
+              <circle cx="146" cy="130" r="5" fill="currentColor" />
             </svg>
             <svg
-              className="route-line pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 text-foreground sm:block"
-              width="230"
+              className="route-line pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 text-foreground xl:block"
+              width="190"
               height="170"
-              viewBox="0 0 230 170"
+              viewBox="0 0 190 170"
               fill="none"
               aria-hidden
             >
               <path
-                d="M230 140 H144 Q132 140 132 128 V52 Q132 40 120 40 H58"
+                d="M190 140 H124 Q112 140 112 128 V52 Q112 40 100 40 H54"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 pathLength="400"
               />
-              <circle cx="48" cy="40" r="5" fill="currentColor" />
+              <circle cx="44" cy="40" r="5" fill="currentColor" />
             </svg>
 
             <h2 className="relative mx-auto max-w-2xl text-4xl font-bold tracking-tight sm:text-6xl">
