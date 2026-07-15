@@ -4,6 +4,48 @@ running log of project state for anyone (human or agent) picking up the work.
 newest entry on top. update after every 5-10 changes. architecture and rules
 live in AGENTS.md, this file is only "what happened and what is next".
 
+## 2026-07-15 21:30 - session continues (claude fable 5): real suspensions, /settings, oauth debugging
+
+### done and verified (third wave, commits 449a6f8..f9c08b9)
+
+- suspensions ENFORCED, not just cosmetic: banned_until rides along in the
+  user object even on a pre-ban token, so shorten/links/delete/api-key answer
+  403 "account suspended" instantly. the dashboard shows a suspension notice
+  with appeal contacts and deliberately no sign out button. full cycle
+  verified live on qa-target (ban -> blocked ui + 403 shorten -> unban ->
+  normal). 3 new route tests, 62 green total
+- dashboard slimmed per owner: api access + password change moved to a new
+  /settings page (linked from the band), insight row (chart + activity) sits
+  under the full width links list
+- long legal pages had a broken load stagger (rise-seq delays only cover 5
+  children), privacy/terms/docs now reveal sections on scroll
+- oauth failures are no longer silent: the login page reads
+  error_description from the callback url and shows it, the dashboard
+  preserves the error hash when bouncing to /login. github sign in itself is
+  still unverified: likely cause is the github APP (Iv23... client id)
+  missing the "email addresses: read-only" account permission, owner briefed
+  with exact fix steps (or switch to a classic oauth app)
+- nav-to-band spacing (pt-4) on dashboard/settings/admin, hydration mismatch
+  on /settings fixed
+- icons: stopwatch + bar pillars shipped, closed eye shipped for privacy then
+  owner asked for a shield instead, black card icon: keycaps rejected, now a
+  cyan-colored speedometer gauge per owner's reference image. both
+  replacements still fighting willow 429s at write time (task bkff7cksf)
+
+### waiting on the owner
+
+1. supabase mcp: add SUPABASE_ACCESS_TOKEN to .env + register the mcp in
+   .mcp.json (snippet in chat, classifier blocked me from editing it), then
+   the three migrations can finally be applied next session
+2. ADMIN_EMAILS: put your real account email in .env and vercel env to use
+   /admin (locally i tested with the qa account)
+3. github app: grant "email addresses: read-only" or create a classic oauth
+   app, then retry sign in - errors now show on /login
+4. smtp (optional): resend/brevo creds into SMTP_* to make suspension emails
+   and custom auth templates work
+5. decision needed for paid plans: a commercial site legally needs a full
+   impressum (real name + address) in germany, see chat summary
+
 ## 2026-07-15 20:00 - session continues (claude fable 5): admin panel, paid plans, icons, legal
 
 ### done and verified (second wave, commits a7ff1a2..b19ab7f + follow-ups)

@@ -38,9 +38,14 @@ running `scripts/qa.sh`, redesign the ui away from the design system below.
 - `GET /{code}` redirects and counts the click (signed-in links only)
 - one api key per account, shown once and stored as a hash. regenerating
   invalidates the old key. settings are locked at 5 rpm and 31-day links,
-  higher limits go through the support contacts
-- pages: `/` home, `/login`, `/dashboard`, `/docs` (api), `/privacy`, `/terms`,
-  `/reset-password`
+  higher limits are sold by individual agreement (crypto accepted) through the
+  support contacts, terms and privacy describe this
+- admin control room at `/admin` (access via ADMIN_EMAILS env): users with
+  link counts, suspend/unsuspend with optional email notice, link search and
+  force delete. a suspended account instantly loses shorten, dashboard and api
+  keys and sees a suspension notice with no sign out
+- pages: `/` home, `/login`, `/dashboard`, `/settings` (api key + password),
+  `/admin`, `/docs` (api), `/privacy`, `/terms`, `/reset-password`
 - support contacts (public): telegram @aimwork, a@leet-cheats.xyz
 - free tier everything, no trackers, minimal design
 
@@ -68,10 +73,14 @@ one vercel project serves both frontend and backend:
 - `api/_lib/api_keys.py` - api key generation, sha-256 hashing, owner lookup, per-account settings
 - `api/_lib/link_policy.py` - who gets which link ttl and who collects clicks
 - `api/_lib/abuse.py` - keyed email fingerprint for signup abuse events
+- `api/_lib/admin.py` - admin identity (ADMIN_EMAILS) + gotrue admin api calls
+- `api/_lib/mailer.py` - optional smtp notifications, no-op when unset
 - `app/layout.tsx` - fonts, Nav and Footer
 - `app/page.tsx` - home: tinted hero + shorten form + feature grid + api banner
 - `app/login/page.tsx` - sign in / create account (terms checkbox, spam notice) + github oauth
-- `app/dashboard/page.tsx` - overview band, links list with copy chips, api access, security
+- `app/dashboard/page.tsx` - overview band, links list with copy chips, chart + activity, suspension notice
+- `app/settings/page.tsx` - api key management + password change
+- `app/admin/page.tsx` - control room (users, suspensions, link moderation)
 - `app/docs/`, `app/privacy/`, `app/terms/` - api docs and legal pages
 - `app/reset-password/page.tsx` - sets a new password from the email recovery link
 - `app/icon.svg` + `app/favicon.ico` - keycap "l" favicon
@@ -96,11 +105,18 @@ one vercel project serves both frontend and backend:
 | DELETE | /api/py/links/{id} | required | deletes own link only |
 | GET | /api/py/logs | required | last 20 api events of the caller, `[]` until migrated |
 | POST | /api/py/auth/signup-event | no | best-effort signup abuse telemetry (ip + keyed email fingerprint), 5/h per ip |
+| GET | /api/py/admin/users | admin | user list from the auth admin api + link counts |
+| GET | /api/py/admin/links | admin | latest/searched links across all users (q sanitized) |
+| POST | /api/py/admin/users/{id}/suspend | admin | gotrue ban (days or permanent), optional link wipe, optional email |
+| POST | /api/py/admin/users/{id}/unsuspend | admin | lifts the ban, optional email |
+| DELETE | /api/py/admin/links/{id} | admin | force delete any link |
 | GET | /{code} | no | 302 to target, expired/missing -> 302 `/?notfound=1`, click counted in background for signed-in links |
 
 read endpoints rate limit through `allow_read` (fails open on db hiccups), write
 endpoints stay strict. shorten/delete log into `api_events` via background tasks
-and tolerate the table not existing yet.
+and tolerate the table not existing yet. suspended accounts (banned_until in the
+user object) get 403 "account suspended" from shorten, links, delete and api-key
+endpoints even while their pre-ban token is still technically valid.
 
 ## database (supabase)
 
@@ -129,6 +145,9 @@ project id `doaujyzqarexjdeblmjs`, eu-central-1, free tier, url https://doaujyzq
 | WILLOW_IMAGE_API_KEY | willow-mcp image generation, dev only, never deployed | set |
 | WILLOW_IMAGE_MULLVAD_EXITS | optional mullvad relay names for willow-mcp | optional |
 | NEXT_PUBLIC_SITE_URL | short link display + loop guard | localhost, becomes deploy url |
+| ADMIN_EMAILS | admin panel access, comma separated | owner sets locally + in vercel |
+| SMTP_HOST/PORT/USERNAME/PASSWORD/FROM | suspension emails, optional | unset, emails skipped |
+| SUPABASE_ACCESS_TOKEN | supabase mcp (migrations), local only | owner adds for the next session |
 
 ## commands
 
