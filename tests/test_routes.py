@@ -1,0 +1,155 @@
+# route-level contract: db hiccups and missing tables degrade, never 500
+import pytest
+from fastapi.testclient import TestClient
+from postgrest.exceptions import APIError
+
+from api import index
+from api._lib import api_keys, auth, ratelimit
+
+
+def db_error():
+    # postgrest error shape for a missing relation
+    return APIError({"message": "relation does not exist", "code": "42P01"})
+
+
+class FakeResult:
+    def __init__(self, data):
+        self.data = data
+
+
+class FakeQuery:
+    def __init__(self, result=None, error=None):
+        self._result = result
+        self._error = error
+
+    def __getattr__(self, name):
+        # select, insert, upsert, delete, eq, order, limit all chain
+        def chain(*args, **kwargs):
+            return self
+
+        return chain
+
+    def execute(self):
+        if self._error is not None:
+            raise self._error
+        return self._result
+
+
+class FakeDb:
+    # tables/rpcs map a name to row data, or to an exception to raise on execute
+    def __init__(self, tables=None, rpcs=None):
+        self.tables = tables or {}
+        self.rpcs = rpcs or {}
+
+    def table(self, name):
+        value = self.tables.get(name, [])
+        if isinstance(value, Exception):
+            return FakeQuery(error=value)
+        return FakeQuery(result=FakeResult(value))
+
+    def rpc(self, name, params):
+        value = self.rpcs.get(name, True)
+        if isinstance(value, Exception):
+            return FakeQuery(error=value)
+        return FakeQuery(result=FakeResult(value))
+
+
+AUTH = {"authorization": "Bearer test-token"}
+
+
+@pytest.fixture
+def make_client(monkeypatch):
+    def build(db, user={"id": "user-1"}):
+        monkeypatch.setattr(index, "client", lambda: db)
+        monkeypatch.setattr(api_keys, "client", lambda: db)
+        monkeypatch.setattr(ratelimit, "client", lambda: db)
+        monkeypatch.setattr(
+            auth, "user_from_token", lambda authorization: user if authorization else None
+        )
+        return TestClient(index.app, raise_server_exceptions=False)
+
+    return build
+
+
+def test_links_returns_rows_and_site_url(make_client):
+    rows = [
+        {
+            "id": "1",
+            "code": "abc123",
+            "target_url": "https://example.com",
+            "created_at": "2026-07-15T00:00:00+00:00",
+            "expires_at": None,
+            "clicks": 3,
+        }
+    ]
+    client = make_client(FakeDb(tables={"links": rows}))
+
+    resp = client.get("/api/py/links", headers=AUTH)
+
+    assert resp.status_code == 200
+    assert resp.json()["links"] == rows
+    assert "site_url" in resp.json()
+
+
+def test_links_survive_rate_limit_db_failure(make_client):
+    # the dashboard must keep working when the rate limit rpc is down
+    client = make_client(
+        FakeDb(tables={"links": []}, rpcs={"check_rate_limit": db_error()})
+    )
+
+    resp = client.get("/api/py/links", headers=AUTH)
+
+    assert resp.status_code == 200
+    assert resp.json()["links"] == []
+
+
+def test_logs_survive_rate_limit_db_failure(make_client):
+    client = make_client(
+        FakeDb(tables={"api_events": []}, rpcs={"check_rate_limit": db_error()})
+    )
+
+    resp = client.get("/api/py/logs", headers=AUTH)
+
+    assert resp.status_code == 200
+
+
+def test_logs_empty_when_table_missing(make_client):
+    client = make_client(FakeDb(tables={"api_events": db_error()}))
+
+    resp = client.get("/api/py/logs", headers=AUTH)
+
+    assert resp.status_code == 200
+    assert resp.json() == {"events": []}
+
+
+def test_shorten_with_api_key_gives_503_when_table_missing(make_client):
+    # a valid-looking key must not turn into a raw 500 before the migration runs
+    client = make_client(FakeDb(tables={"api_keys": db_error()}), user=None)
+
+    resp = client.post(
+        "/api/py/shorten",
+        json={"url": "https://example.com/page"},
+        headers={"x-api-key": "lynka_someKeyValue"},
+    )
+
+    assert resp.status_code == 503
+
+
+def test_shorten_with_unknown_api_key_gives_401(make_client):
+    client = make_client(FakeDb(tables={"api_keys": []}), user=None)
+
+    resp = client.post(
+        "/api/py/shorten",
+        json={"url": "https://example.com/page"},
+        headers={"x-api-key": "lynka_unknownKey"},
+    )
+
+    assert resp.status_code == 401
+
+
+def test_api_key_settings_503_when_table_missing(make_client):
+    client = make_client(FakeDb(tables={"api_keys": db_error()}))
+
+    resp = client.get("/api/py/api-key", headers=AUTH)
+
+    assert resp.status_code == 503

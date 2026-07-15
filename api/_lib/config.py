@@ -21,19 +21,19 @@ _load_dotenv()
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
-WILLOW_API_KEY = os.environ.get("WILLOW_API_KEY", "")
 SITE_URL = os.environ.get("NEXT_PUBLIC_SITE_URL", "http://localhost:3000")
 
-# anonymous links live one hour
+# link lifetimes
 ANON_LINK_TTL_SECONDS = 3600
+USER_LINK_TTL_SECONDS = 31 * 24 * 3600
 
-# shorten limits per hour
+# shorten limits: anon per hour, accounts per minute (marketed as 5 rpm)
 ANON_SHORTEN_PER_HOUR = 10
-USER_SHORTEN_PER_HOUR = 60
+USER_SHORTEN_PER_MINUTE = 5
 
-# chat limits per hour
-ANON_CHAT_PER_HOUR = 10
-USER_CHAT_PER_HOUR = 50
+# api callers may choose their own link expiry within these bounds
+MIN_EXPIRES_IN_SECONDS = 60
+MAX_EXPIRES_IN_SECONDS = 3 * 3600
 
 # authenticated api calls (list, delete) per hour
 USER_API_PER_HOUR = 240

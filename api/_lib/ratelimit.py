@@ -17,3 +17,12 @@ def allow(key: str, action: str, max_hits: int, window_seconds: int = 3600) -> b
         .execute()
     )
     return bool(result.data)
+
+
+def allow_read(key: str, action: str, max_hits: int, window_seconds: int = 3600) -> bool:
+    # read endpoints fail open: a rate limit db hiccup must not break the dashboard.
+    # write endpoints keep the strict allow() so abuse protection never silently drops
+    try:
+        return allow(key, action, max_hits, window_seconds)
+    except Exception:
+        return True
