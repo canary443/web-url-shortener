@@ -46,11 +46,21 @@ running `scripts/qa.sh`, redesign the ui away from the design system below.
   force delete. a suspended account instantly loses shorten, dashboard and api
   keys and sees a suspension notice with no sign out
 - pages: `/` home, `/login`, `/dashboard`, `/settings` (api key + password),
-  `/admin`, `/docs` (api), `/privacy`, `/terms`, `/reset-password`
+  `/admin`, `/docs` (api), `/privacy`, `/terms`, `/reset-password`, `/verify`
+  (human gate interstitial), custom 404 with generated artwork
+- human gate: `proxy.ts` (next 16 middleware) challenges first-time visitors
+  on the app pages listed in its matcher with a turnstile interstitial and a
+  day-long signed cookie. `/{code}` redirects and `/api/py/*` are NEVER gated.
+  the gate and every other captcha are off until both TURNSTILE env vars are
+  set (prod currently runs without them, see SECURITY.md open items)
 - support contacts (public): telegram @aimwork, a@leet-cheats.xyz
 - free tier everything, no trackers, minimal design
 
 ## architecture
+
+LIVE at https://lynka.xyz since 2026-07-15 (vercel project web-url-shortener,
+team t3rmynals-projects, functions pinned to fra1, github pushes to main
+deploy production automatically).
 
 one vercel project serves both frontend and backend:
 
@@ -74,6 +84,9 @@ one vercel project serves both frontend and backend:
 - `api/_lib/api_keys.py` - api key generation, sha-256 hashing, owner lookup, per-account settings
 - `api/_lib/link_policy.py` - who gets which link ttl and who collects clicks
 - `api/_lib/abuse.py` - keyed email fingerprint for signup abuse events
+- `api/_lib/captcha.py` - turnstile siteverify, whole feature off when TURNSTILE_SECRET is empty
+- `api/_lib/botcheck.py` - datacenter ip lookup + burst counters deciding when anon shortens need a captcha
+- `api/_lib/dc_ranges.py` - generated packed cloud ip ranges (aws/gcp/oracle/do/linode/vultr), regenerate via `scripts/update_dc_ranges.py`, never edit
 - `api/_lib/admin.py` - admin identity (ADMIN_EMAILS) + gotrue admin api calls
 - `api/_lib/mailer.py` - optional smtp notifications, no-op when unset
 - `app/layout.tsx` - fonts, Nav and Footer
@@ -99,13 +112,14 @@ one vercel project serves both frontend and backend:
 | method | path | auth | behavior |
 |--------|------|------|----------|
 | GET | /api/py/health | no | `{"status": "ok"}` |
-| POST | /api/py/shorten | optional | body `{url}`. anon: 60 min ttl, 10/h per ip. user token: 31 days, 5/min. `x-api-key`: 31 days, key rpm. `expires_in` is locked -> 422. returns `{code, short_url, expires_at}`. 401 bad key, 422 bad url, 429 limited, 503 keys not migrated |
+| POST | /api/py/shorten | optional | body `{url}`. anon: 60 min ttl, 10/h per ip. user token: 31 days, 5/min. `x-api-key`: 31 days, key rpm. `expires_in` is locked -> 422. suspicious anon traffic (datacenter ip, global >10/min burst, per-ip >5/15s) -> 428 "captcha required" until a valid turnstile token arrives in `x-captcha-token`. returns `{code, short_url, expires_at}`. 401 bad key, 422 bad url, 429 limited, 503 keys not migrated |
 | GET | /api/py/api-key | required | key prefix + locked settings, 503 until the api_keys migration runs |
 | POST | /api/py/api-key | required | creates or regenerates the key, returns it once. 5/h |
 | GET | /api/py/links | required | last 50 links of the user + site_url |
 | DELETE | /api/py/links/{id} | required | deletes own link only |
 | GET | /api/py/logs | required | last 20 api events of the caller, `[]` until migrated |
 | POST | /api/py/auth/signup-event | no | best-effort signup abuse telemetry (ip + keyed email fingerprint), 5/h per ip |
+| POST | /api/py/auth/verify-human | no | body `{token}`. trades a solved turnstile for the signed `lynka_human` gate cookie (24 h, httponly). 503 while captcha is off, 403 bad token, 30/h per ip |
 | GET | /api/py/admin/users | admin | user list from the auth admin api + link counts |
 | GET | /api/py/admin/links | admin | latest/searched links across all users (q sanitized) |
 | POST | /api/py/admin/users/{id}/suspend | admin | gotrue ban (days or permanent), optional link wipe, optional email |
@@ -145,8 +159,10 @@ project id `doaujyzqarexjdeblmjs`, eu-central-1, free tier, url https://doaujyzq
 | SUPABASE_SERVICE_ROLE_KEY | backend writes | set, goes to prod env too |
 | WILLOW_IMAGE_API_KEY | willow-mcp image generation, dev only, never deployed | set |
 | WILLOW_IMAGE_MULLVAD_EXITS | optional mullvad relay names for willow-mcp | optional |
-| NEXT_PUBLIC_SITE_URL | short link display + loop guard | localhost, becomes deploy url |
-| ADMIN_EMAILS | admin panel access, comma separated | owner sets locally + in vercel |
+| NEXT_PUBLIC_SITE_URL | short link display + loop guard | localhost locally, https://lynka.xyz in vercel prod |
+| ADMIN_EMAILS | admin panel access, comma separated | set locally + in vercel (a@leet-cheats.xyz) |
+| NEXT_PUBLIC_TURNSTILE_SITE_KEY | turnstile widget on login/shorten/verify | local: official test key. prod: unset until the real widget exists |
+| TURNSTILE_SECRET | backend siteverify + gate cookie signing | local: official test secret. prod: unset, which disables every captcha |
 | SMTP_HOST/PORT/USERNAME/PASSWORD/FROM | suspension emails, optional | unset, emails skipped |
 | SUPABASE_ACCESS_TOKEN | supabase mcp (migrations), local only | owner adds for the next session |
 
