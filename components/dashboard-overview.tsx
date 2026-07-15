@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type LinkSummary = {
   id: string;
@@ -34,6 +34,27 @@ function eventTime(createdAt: string): string {
   }).format(new Date(createdAt));
 }
 
+function CountUp({ target }: { target: number }) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reduced ? 0 : 700;
+    let raf = 0;
+    const start = performance.now();
+    const tick = (time: number) => {
+      const progress = duration === 0 ? 1 : Math.min(1, (time - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(eased * target));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
+
+  return <>{value}</>;
+}
+
 export function StatPills({ links }: { links: LinkSummary[] }) {
   const [now] = useState(() => Date.now());
   const nextExpiry = links
@@ -42,9 +63,9 @@ export function StatPills({ links }: { links: LinkSummary[] }) {
     .filter((value) => new Date(value).getTime() > now)
     .sort()[0];
   const totalClicks = links.reduce((sum, link) => sum + link.clicks, 0);
-  const stats: [string, string | number][] = [
-    ["links", links.length],
-    ["total clicks", totalClicks],
+  const stats: [string, React.ReactNode][] = [
+    ["links", <CountUp key="links" target={links.length} />],
+    ["total clicks", <CountUp key="clicks" target={totalClicks} />],
     ["next expiry", nextExpiry ? timeLeft(nextExpiry, now) : "none"],
   ];
 

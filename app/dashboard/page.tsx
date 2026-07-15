@@ -108,6 +108,7 @@ export default function DashboardPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [armedId, setArmedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "clicks">("newest");
   const [error, setError] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [pwBusy, setPwBusy] = useState(false);
@@ -260,12 +261,17 @@ export default function DashboardPage() {
   }
 
   const [now] = useState(() => Date.now());
-  const filtered =
+  const filtered = (
     links?.filter(
       (link) =>
         link.code.toLowerCase().includes(query.toLowerCase()) ||
         link.target_url.toLowerCase().includes(query.toLowerCase())
-    ) ?? [];
+    ) ?? []
+  ).sort((a, b) =>
+    sortBy === "clicks"
+      ? b.clicks - a.clicks
+      : Date.parse(b.created_at) - Date.parse(a.created_at)
+  );
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-5">
@@ -325,7 +331,30 @@ export default function DashboardPage() {
                 )}
               </h2>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {links !== null && links.length > 1 && (
+                <div
+                  className="flex rounded-lg border border-line bg-background p-0.5"
+                  role="group"
+                  aria-label="sort links"
+                >
+                  {(["newest", "clicks"] as const).map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSortBy(key)}
+                      aria-pressed={sortBy === key}
+                      className={`cursor-pointer rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-accent-ink ${
+                        sortBy === key
+                          ? "bg-foreground text-background"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      {key}
+                    </button>
+                  ))}
+                </div>
+              )}
               {links !== null && links.length > 8 && (
                 <input
                   type="search"
@@ -375,10 +404,11 @@ export default function DashboardPage() {
 
           {filtered.length > 0 && (
             <ul className="mt-5 space-y-2">
-              {filtered.map((link) => (
+              {filtered.map((link, index) => (
                 <li
                   key={link.id}
-                  className="grid gap-3 rounded-xl bg-background px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:gap-5"
+                  style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
+                  className="rise grid gap-3 rounded-xl bg-background px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:gap-5"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
