@@ -76,6 +76,8 @@ class FakeClient:
 @pytest.fixture(autouse=True)
 def image_key(monkeypatch):
     monkeypatch.setenv("WILLOW_IMAGE_API_KEY", "image-test-key")
+    # a proxy configured in the local .env must not leak into the tests
+    monkeypatch.delenv("WILLOW_IMAGE_PROXY", raising=False)
     monkeypatch.setattr(willow, "_require_mullvad", lambda: None)
 
 
