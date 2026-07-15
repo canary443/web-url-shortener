@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Mode = "signin" | "signup";
@@ -16,6 +16,20 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    // oauth failures come back in the url and would otherwise vanish silently
+    Promise.resolve().then(() => {
+      const params = new URLSearchParams(
+        window.location.hash.replace(/^#/, "") || window.location.search
+      );
+      const description = params.get("error_description") || params.get("error");
+      if (description) {
+        setError(description.replaceAll("+", " ").toLowerCase());
+        window.history.replaceState(null, "", "/login");
+      }
+    });
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

@@ -94,7 +94,9 @@ export default function DashboardPage() {
     accessToken()
       .then(async (token) => {
         if (!token) {
-          router.replace("/login");
+          // keep a failed oauth callback's error visible on the login page
+          const hash = window.location.hash;
+          router.replace(hash.includes("error") ? `/login${hash}` : "/login");
           return;
         }
         const headers = { authorization: `Bearer ${token}` };
