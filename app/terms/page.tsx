@@ -16,6 +16,14 @@ const sections = [
     ],
   },
   {
+    title: "paid upgrades",
+    body: [
+      "the default plan is free: 5 api requests per minute and 31 day links. higher rate limits or a longer link lifetime are available by individual agreement. contact telegram @aimwork or a@leet-cheats.xyz, agree on the scope and the price, and the new limits are applied to your account.",
+      "payment terms, including payment in cryptocurrency, are agreed individually before anything is charged. no payments are collected through this website itself. agreed prices include any applicable taxes.",
+      "if you are a consumer in the eu, you get the statutory information before the agreement and the service starts only after the agreement is made. upgraded limits follow the same abuse rules as everything else; an account suspended for abuse is not refunded except where the law requires it.",
+    ],
+  },
+  {
     title: "no abuse",
     body: [
       "do not create extra accounts to avoid rate limits, expiry rules, suspensions or other service controls. automated signup, token sharing, excessive traffic and attempts to disrupt or probe the service are not allowed.",
